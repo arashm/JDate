@@ -16,11 +16,20 @@ The prefered way of using the lib is throw `componentjs`, but you can also use i
 
 The full-version is useful for debugging. You may want to use minified version in production as it is smaller.
 
-### API
+### Initialization
+
+For initializing `JDate` you may either pass an array of Jalali date to it or a `Date` object. If no parameter is passed, the default is today:
 
 ```javascript
 var JDate = require('jdate');
-jdate = new JDate;
+var jdate = new JDate; // => default to today
+var jdate2 = new JDate([1393, 10,11]);
+var jdate3 = new JDate(new Date(2014, 1, 3));
+
+```
+
+### API
+```javascript
 jdate.date //=> [1393,5,13] An Array of Jalali Date
 jdate._d // => Gregorian Date Object
 
@@ -71,4 +80,4 @@ Report bugs and suggest feature in [issue tracker](https://github.com/arashm/Jal
 
 ## License
 
-[MIT](https://github.com/arashm/Jalali-Calendar/blob/master/LICENSE)
+[MIT](https://github.com/arashm/JDate/blob/master/LICENSE)
