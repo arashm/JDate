@@ -5,14 +5,16 @@ A Jalali to Gregorian converter in Java-script with support of formatting output
 
 ## Usage
 
-The prefered way of using the lib is throw `componentjs`, but you can also use it with adding the script to your webpage. Just grab the minified or full version of lib from [build directory](https://github.com/arashm/JDate/tree/master/build) and use it as usual:
+The prefered way of using the lib is throw `componentjs`, but you can also use it with adding the script to your webpage. Just grab the minified or full-version of lib from [build directory](https://github.com/arashm/JDate/tree/master/build) and use it as usual:
 
 ```html
 <head>
   <script src="jdate.js" type="text/javascript" charset="utf-8"></script>
-  // <script src="jdate.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="jdate.min.js" type="text/javascript" charset="utf-8"></script>
 </head>
 ```
+
+The full-version is useful for debugging. You may want to use minified version in production as it is smaller.
 
 ### API
 
