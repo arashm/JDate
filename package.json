@@ -1,0 +1,42 @@
+{
+  "name": "JDate",
+  "version": "0.1.0",
+  "description": "A Jalali to Gregorian converter with support of formatting output",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:arashm/JDate.git"
+  },
+  "keywords": [
+    "jalali",
+    "sun",
+    "shamsi",
+    "calendar",
+    "gregorian",
+    "converter"
+  ],
+  "author": "Arash Mousavi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arashm/JDate/issues"
+  },
+  "homepage": "https://github.com/arashm/JDate",
+  "devDependencies": {
+    "gulp": "^3.8.7",
+    "gulp-autoprefixer": "0.0.8",
+    "gulp-cache": "^0.2.0",
+    "gulp-clean": "^0.3.1",
+    "gulp-component-build": "0.0.4",
+    "gulp-concat": "^2.3.4",
+    "gulp-imagemin": "^0.6.2",
+    "gulp-livereload": "^2.1.0",
+    "gulp-minify-css": "^0.3.7",
+    "gulp-notify": "^1.4.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-ruby-sass": "^0.7.1",
+    "gulp-uglify": "^0.3.1"
+  }
+}

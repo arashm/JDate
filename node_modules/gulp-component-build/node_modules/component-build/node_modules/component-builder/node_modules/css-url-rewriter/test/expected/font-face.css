@@ -1,0 +1,8 @@
+@font-face {
+  font-family: 'coool';
+  font-style: normal;
+  font-weight: 400;
+  src: url(_fonts/coool.woff) format('woff');
+  src:url("_fonts/coool.eot?#iefix") format("embedded-opentype"),  url("_fonts/coool.woff") format("woff"),url("_fonts/coool.ttf") format("truetype"),
+    url("_fonts/coool.svg#coool") format("svg")
+}

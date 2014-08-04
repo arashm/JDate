@@ -1,0 +1,9 @@
+{
+  "name": "import-from-cjs",
+  "dependencies": {
+    "ianstormtaylor/is": "0.1.1"
+  },
+  "scripts": [
+    "index.js"
+  ]
+}

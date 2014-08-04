@@ -1,0 +1,5 @@
+{
+  "name": "import-default-from-cjs",
+  "dependencies": {"component/emitter": "1.0.0"},
+  "scripts": ["index.js"]
+}

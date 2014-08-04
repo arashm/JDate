@@ -1,0 +1,5 @@
+{
+  "name": "module-from",
+  "dependencies": {"component/emitter": "1.0.0"},
+  "scripts": ["index.js"]
+}

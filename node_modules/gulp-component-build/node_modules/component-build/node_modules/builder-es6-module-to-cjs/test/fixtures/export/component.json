@@ -1,0 +1,6 @@
+{
+  "name": "export",
+  "scripts": [
+    "index.js"
+  ]
+}

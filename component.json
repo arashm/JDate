@@ -1,0 +1,22 @@
+{
+  "name": "jdate",
+  "version": "0.1.0",
+  "description": "A Jalali to Gregorian converter with support of formatting output",
+  "keywords": [
+    "date",
+    "calendar",
+    "jalali",
+    "sun",
+    "shamsi"
+  ],
+  "repository": "arashm/JDate",
+  "scripts": [
+    "index.js",
+    "lib/converter.js",
+    "lib/jdate.js"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "component/map": "*"
+  }
+}

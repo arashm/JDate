@@ -1,0 +1,15 @@
+/* URLs in IE's 'behavior' property are skipped, by default */
+*, *:before, *:after {
+  box-sizing: border-box;
+  
+  /* without hack */
+  behavior: url(scripts/boxsizing.htc);
+  behavior  : url(  scripts/boxsizing.htc  );
+  
+  /* with IE<8 hack */
+  *behavior: url(scripts/boxsizing.htc);
+}
+
+.thing {
+  background: url('cat.jpg');
+}
