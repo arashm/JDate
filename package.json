@@ -1,5 +1,5 @@
 {
-  "name": "JDate",
+  "name": "jdate",
   "version": "0.1.1",
   "description": "A Jalali to Gregorian converter with support of formatting output",
   "main": "index.js",
