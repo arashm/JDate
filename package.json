@@ -38,5 +38,8 @@
     "gulp-rename": "^1.2.0",
     "gulp-ruby-sass": "^0.7.1",
     "gulp-uglify": "^0.3.1"
+  },
+  "dependencies": {
+    "map": "0.0.3"
   }
 }
