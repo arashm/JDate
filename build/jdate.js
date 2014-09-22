@@ -149,9 +149,9 @@ require.register("component~to-function@2.0.5", function (exports, module) {
 
 var expr;
 try {
-  expr = require("component~props@1.1.2");
+  expr = require('component~props@1.1.2');
 } catch(e) {
-  expr = require("component~props@1.1.2");
+  expr = require('component~props@1.1.2');
 }
 
 /**
@@ -303,7 +303,7 @@ require.register("component~map@0.0.1", function (exports, module) {
  * Module dependencies.
  */
 
-var toFunction = require("component~to-function@2.0.5");
+var toFunction = require('component~to-function@2.0.5');
 
 /**
  * Map the given `arr` with callback `fn(val, i)`.
@@ -325,7 +325,7 @@ module.exports = function(arr, fn){
 });
 
 require.register("jdate", function (exports, module) {
-module.exports = require("jdate/lib/jdate.js");
+module.exports = require('jdate/lib/jdate.js');
 
 
 });
@@ -553,10 +553,10 @@ require.register("jdate/lib/jdate.js", function (exports, module) {
 /*
  * https://github.com/arashm/JDate
  * @author: Arash Mousavi
- * @version: 0.1.0
+ * @version: 0.1.3
  */
-var jalali = require("jdate/lib/converter.js")
-    , map = require("component~map@0.0.1");
+var jalali = require('jdate/lib/converter.js')
+    , map = require('component~map@0.0.1');
 
 module.exports = JDate;
 
