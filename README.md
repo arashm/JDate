@@ -23,7 +23,7 @@ For initializing `JDate` you may either pass an array of Jalali date to it or a 
 ```javascript
 var JDate = require('jdate');
 var jdate = new JDate; // => default to today
-var jdate2 = new JDate([1393, 10,11]);
+var jdate2 = new JDate([1393, 10, 11]);
 var jdate3 = new JDate(new Date(2014, 1, 3));
 
 ```
