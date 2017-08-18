@@ -4,18 +4,13 @@
  * @version: 1.0.0
  */
 
-const Converter = require("./converter");
-const helpers = require("./helpers");
-const {
-  MONTH_NAMES,
-  ABBR_DAYS,
-  DAYS_NAMES
-} = require("./constants.js");
+const Converter = require('./converter');
+const helpers = require('./helpers');
 
 class JDate {
   constructor(input) {
-    this._d = input || new Date;
-    this.date = this.to_jalali(this._d);
+    this.input = input || new Date();
+    this.date = this.toJalali(this.input);
   }
 
   /*
@@ -24,9 +19,15 @@ class JDate {
    * @params {Date} date
    * @return {Array}
    */
-  static to_jalali(date) {
-    const jdate = Converter.d2j(Converter.g2d(date.getFullYear(), date.getMonth() + 1, date.getDate()));
-    return [jdate.jy, jdate.jm, jdate.jd]
+  static toJalali(date) {
+    const julianDate = Converter.g2d(
+      date.getFullYear(),
+      date.getMonth() + 1,
+      date.getDate(),
+    );
+    const jdate = Converter.d2j(julianDate);
+
+    return [jdate.jy, jdate.jm, jdate.jd];
   }
 
   /*
@@ -37,8 +38,9 @@ class JDate {
    * @params {Number} day
    * @return {Date}
    */
-  static to_gregorian(year, month, day) {
-    var gdate = Converter.d2g(Converter.j2d(year, month, day));
+  static toGregorian(year, month, day) {
+    const gdate = Converter.d2g(Converter.j2d(year, month, day));
+
     return new Date(gdate.gy, gdate.gm - 1, gdate.gd);
   }
 
@@ -49,7 +51,7 @@ class JDate {
    * @return {Boolean}
    */
   static isLeapYear(year) {
-    return Converter.jalCal(year).leap === 0
+    return Converter.jalCal(year).leap === 0;
   }
 
   /*
@@ -60,30 +62,31 @@ class JDate {
    * @return {Number}
    */
   static daysInMonth(year, month) {
-    year += ~~(month / 12)
-    month = month - ~~(month / 12) * 12
-    if (month < 0) {
-      month += 12
-      year -= 1
-    } else if (month == 0) {
-      month = 12
+    let calcedYear = year - Math.floor(month / 12);
+    let calcedMonth = month - (Math.floor(month / 12) * 12);
+
+    if (calcedMonth < 0) {
+      calcedMonth += 12;
+      calcedYear -= 1;
+    } else if (calcedMonth === 0) {
+      calcedMonth = 12;
     }
-    if (month <= 6) {
-      return 31
-    } else if (month <= 11) {
-      return 30
-    } else if (JDate.isLeapYear(year)) {
-      return 30
-    } else {
-      return 29
+
+    if (calcedMonth <= 6) {
+      return 31;
+    } else if (calcedMonth <= 11) {
+      return 30;
+    } else if (JDate.isLeapYear(calcedYear)) {
+      return 30;
     }
+    return 29;
   }
 
   /*
    * Converts JDate date to Gregorian
    */
-  to_gregorian() {
-    return JDate.to_gregorian(this.date[0], this.date[1], this.date[2]);
+  toGregorian() {
+    return JDate.toGregorian(this.date[0], this.date[1], this.date[2]);
   }
 
   /*
@@ -102,9 +105,9 @@ class JDate {
    * @return {JDate}
    */
   setFullYear(year) {
-    this.date[0] = parseInt(year);
-    this._d = this.to_gregorian();
-    return this
+    this.date[0] = parseInt(year, 10);
+    this.input = this.toGregorian();
+    return this;
   }
 
   /*
@@ -123,11 +126,12 @@ class JDate {
    * @returns {JDate}
    */
   setMonth(month) {
-    fixed = fix_month(this.getFullYear(), parseInt(month));
+    const fixed = helpers.fixMonth(this.getFullYear(), parseInt(month, 10));
     this.date[0] = fixed[0];
     this.date[1] = fixed[1];
-    this._d = this.to_gregorian();
-    return this
+    this.input = this.toGregorian();
+
+    return this;
   }
 
   /*
@@ -146,9 +150,10 @@ class JDate {
    * @return {JDate}
    */
   setDate(date) {
-    this.date[2] = parseInt(date);
-    this._d = this.to_gregorian();
-    return this
+    this.date[2] = parseInt(date, 10);
+    this.input = this.toGregorian();
+
+    return this;
   }
 
   /*
@@ -157,7 +162,7 @@ class JDate {
    * @returns {Number}
    */
   getDay() {
-    return this._d.getDay()
+    return this.input.getDay();
   }
 
   /*
@@ -167,10 +172,11 @@ class JDate {
    * @return {String}
    */
   format(format) {
-    format = helpers.replaceYear(format, this);
-    format = helpers.replaceMonth(format, this);
-    format = helpers.replaceDay(format, this);
-    return format;
+    let result = helpers.replaceYear(format, this);
+    result = helpers.replaceMonth(result, this);
+    result = helpers.replaceDay(result, this);
+
+    return result;
   }
 }
 

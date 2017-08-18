@@ -8,5 +8,9 @@
   "env": {
      "node": true,
      "es6": true,
+     "jest": true
+  },
+  "rules": {
+    "comma-dangle": ["error", "never"]
   }
 }
