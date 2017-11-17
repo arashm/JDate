@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
 
-const {
+import {
   MONTH_NAMES,
   ABBR_DAYS,
   DAYS_NAMES
-} = require('./constants.js');
+} from './constants';
 
 function div(a, b) {
   return Math.floor(a / b);
@@ -26,8 +26,14 @@ function fixMonth(year, month) {
   return [year, month];
 }
 
+function zeroLeading(str) {
+  if (str && str.length === 1) { return `0${str}`; }
+  return str;
+}
+
 function replaceYear(str, date) {
   const match = str.match(/[yY]+/);
+  if (!match) { return str; }
   switch (match[0]) {
     case 'YYYY':
     case 'YYY': {
@@ -48,10 +54,15 @@ function replaceYear(str, date) {
 
 function replaceMonth(str, date) {
   const match = str.match(/[mM]+/);
+  if (!match) { return str; }
   switch (match[0]) {
-    case 'M':
-    case 'MM': {
+    case 'M': {
       const value = replaceMonth(str.replace(match, date.getMonth()), date);
+      return value;
+    }
+    case 'MM': {
+      const zeroLeadingMonth = zeroLeading(date.getMonth().toString());
+      const value = replaceMonth(str.replace(match, zeroLeadingMonth), date);
       return value;
     }
     case 'MMM':
@@ -69,10 +80,15 @@ function replaceMonth(str, date) {
 
 function replaceDay(str, date) {
   const match = str.match(/[dD]+/);
+  if (!match) { return str; }
   switch (match[0]) {
-    case 'D':
-    case 'DD': {
+    case 'D': {
       const value = replaceDay(str.replace(match, date.getDate()), date);
+      return value;
+    }
+    case 'DD': {
+      const zeroLeadingDate = zeroLeading(date.getDate().toString());
+      const value = replaceDay(str.replace(match, zeroLeadingDate), date);
       return value;
     }
     case 'd':
@@ -93,5 +109,8 @@ function replaceDay(str, date) {
 
 module.exports = {
   mod,
-  div
+  div,
+  replaceDay,
+  replaceMonth,
+  replaceYear
 };

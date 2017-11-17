@@ -1,7 +1,7 @@
 import { mod } from './helpers';
 import { GREGORIAN_EPOCH, PERSIAN_EPOCH } from './constants';
 
-class Converter {
+export default class Converter {
   //  LEAP_GREGORIAN  --  Is a given year in the Gregorian calendar a leap year?
   static leapGregorian(year) {
     return ((year % 4) === 0) &&
@@ -115,5 +115,3 @@ class Converter {
     return Converter.julianToPersian(julian);
   }
 }
-
-module.exports = Converter;

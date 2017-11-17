@@ -4,13 +4,19 @@
  * @version: 1.0.0
  */
 
-const Converter = require('./converter');
-const helpers = require('./helpers');
+import Converter from './converter';
+import * as helpers from './helpers';
 
-class JDate {
-  constructor(input) {
-    this.input = input || new Date();
-    this.date = this.toJalali(this.input);
+export default class JDate {
+  constructor(input = new Date()) {
+    this.input = input;
+    if (Array.isArray(input)) {
+      this.date = input.map(num => parseInt(num, 10));
+      this._d = this.toGregorian();
+    } else if (input instanceof Date) {
+      this._d = input;
+      this.date = JDate.toJalali(this.input);
+    }
   }
 
   /*
@@ -20,15 +26,17 @@ class JDate {
    * @return {Array}
    */
   static toJalali(date) {
-    const julianDate = Converter.g2d(
+    const julianDate = Converter.gregorianToJulian(
       date.getFullYear(),
       date.getMonth() + 1,
       date.getDate(),
     );
-    const jdate = Converter.d2j(julianDate);
+    const jdate = Converter.julianToPersian(julianDate);
 
-    return [jdate.jy, jdate.jm, jdate.jd];
+    return jdate;
   }
+  // eslint-disable-next-line camelcase
+  static to_jalali(date) { return JDate.toJalali(date); }
 
   /*
    * converts a Jalali date to Gregorian
@@ -39,10 +47,14 @@ class JDate {
    * @return {Date}
    */
   static toGregorian(year, month, day) {
-    const gdate = Converter.d2g(Converter.j2d(year, month, day));
+    const gdate = Converter.julianToGregorian(
+      Converter.persianToJulian(year, month, day)
+    );
 
-    return new Date(gdate.gy, gdate.gm - 1, gdate.gd);
+    return new Date(gdate[0], gdate[1] - 1, gdate[2]);
   }
+  // eslint-disable-next-line camelcase
+  static to_gregorian(year, month, day) { return JDate.toGregorian(year, month, day); }
 
   /*
    * Checks if a given year is a leap year or not
@@ -51,14 +63,14 @@ class JDate {
    * @return {Boolean}
    */
   static isLeapYear(year) {
-    return Converter.jalCal(year).leap === 0;
+    return Converter.leapPersian(year);
   }
 
   /*
-   * Returns month length
+   * Returns month length.
    *
    * @params {Number} year
-   * @params {Number} month
+   * @params {Number} month zero based
    * @return {Number}
    */
   static daysInMonth(year, month) {
@@ -72,9 +84,9 @@ class JDate {
       calcedMonth = 12;
     }
 
-    if (calcedMonth <= 6) {
+    if (calcedMonth < 6) {
       return 31;
-    } else if (calcedMonth <= 11) {
+    } else if (calcedMonth < 11) {
       return 30;
     } else if (JDate.isLeapYear(calcedYear)) {
       return 30;
@@ -162,7 +174,7 @@ class JDate {
    * @returns {Number}
    */
   getDay() {
-    return this.input.getDay();
+    return this._d.getDay();
   }
 
   /*
@@ -179,5 +191,3 @@ class JDate {
     return result;
   }
 }
-
-module.exports = JDate;
