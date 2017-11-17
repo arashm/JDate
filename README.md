@@ -1,6 +1,9 @@
 JDate
 =====
 
+[![Build Status](https://travis-ci.org/arashm/JDate.svg?branch=master)](https://travis-ci.org/arashm/JDate)
+[![npm version](https://badge.fury.io/js/jalali-date.svg)](https://badge.fury.io/js/jalali-date)
+
 A Jalali to Gregorian converter in Java-script with support of formatting output
 
 ## Installation
