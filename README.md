@@ -3,9 +3,15 @@ JDate
 
 A Jalali to Gregorian converter in Java-script with support of formatting output
 
-## Usage
+## Installation
 
-The prefered way of using the lib is throw `componentjs`, but you can also use it with adding the script to your webpage. Just grab the minified or full-version of lib from [build directory](https://github.com/arashm/JDate/tree/master/build) and use it as usual:
+Install via NPM/Yarn:
+
+```
+npm install jalali-date
+```
+
+You could grab the latest version from `lib` directory and use it:
 
 ```html
 <head>
@@ -50,8 +56,8 @@ jdate.format('dddd DD MMMM YYYY') // => پنج‌شنبه 12 شهریور 1394
 // Static functions
 JDate.isLeapYear(1393) // => false
 JDate.daysInMonth(1393, 5) // => 31
-JDate.to_gregorian(1393,12,11) // => Gregorian Date object
-JDate.to_jalali(new Date) // => JDate object
+JDate.toGregorian(1393,12,11) // => Gregorian Date object
+JDate.toJalali(new Date) // => JDate object
 ```
 
 ## Formatting output
@@ -67,9 +73,11 @@ The conversion identifiers are as follows:
 | ------------- | ------------- | ---------- |
 | `YYY` or `YYYY`      | Full Year (4 digits) | 1393 |
 | `YY`      | Year (2 digits)      |   93 |
-| `M` or `MM` | Month in number      |  returns `5` for `امرداد`   |
+| `M` | Month in number      |  returns `5` for `امرداد`   |
+| `MM` | Month in number      |  returns `05` for `امرداد`   |
 | `MMM` or `MMMM` | Month in string | `امرداد` |
-| `D` or `DD` | Day in number | 26 |
+| `D` | Day in number | 26 |
+| `DD` | Day in number | 06 |
 | `d` or `dd` | Abbreviation of day name in string | `۱ش` (for یکشنبه) |
 | `ddd` or `dddd` | Full day name in string | `یکشنبه` |
 
