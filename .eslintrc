@@ -11,6 +11,7 @@
      "jest": true
   },
   "rules": {
-    "comma-dangle": ["error", "never"]
+    "comma-dangle": ["error", "never"],
+    "no-underscore-dangle": 0
   }
 }
