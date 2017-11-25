@@ -1,6 +1,6 @@
 {
   "name": "jalali-date",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Jalali to Gregorian converter with support of formatting output",
   "scripts": {
     "start": "webpack --progress --colors --watch --env dev",
@@ -11,6 +11,7 @@
     "type": "git",
     "url": "git@github.com:arashm/JDate.git"
   },
+  "main": "lib/jdate.js",
   "keywords": [
     "jalali",
     "sun",
