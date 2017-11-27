@@ -2,11 +2,11 @@ import JDate from '../src/jdate';
 
 describe('JDate', () => {
   it('should returns the current date by default', () => {
-    const now = Date.now();
+    const now = new Date(2017, 10, 28).getTime();
     Date.now = jest.genMockFunction().mockReturnValue(now);
     const jdate = new JDate();
 
-    expect(jdate).toEqual({ date: [1396, 8, 26], input: new Date(now), _d: new Date(now) });
+    expect(jdate.date).toEqual([1396, 9, 7]);
   });
 
   it('should convert a custom array', () => {
