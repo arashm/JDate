@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    'jdate': path.join(__dirname, '/src/jdate.js'),
+    jdate: path.join(__dirname, '/src/jdate.js'),
     'jdate.min': path.join(__dirname, '/src/jdate.js')
   },
   devtool: 'source-map',
