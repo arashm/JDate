@@ -27,19 +27,23 @@
   },
   "homepage": "https://github.com/arashm/JDate",
   "devDependencies": {
-    "babel-core": "^6.25.0",
-    "babel-eslint": "^7.2.3",
-    "babel-jest": "^20.0.3",
-    "babel-loader": "^7.0.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-preset-es2015": "^6.24.1",
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-eslint": "^10.0.2",
+    "babel-jest": "^24.8.0",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-add-module-exports": "^1.0.2",
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-import": "^2.3.0",
     "eslint-plugin-jest": "^22.14.1",
-    "jest": "^20.0.4",
-    "jest-cli": "^20.0.4",
+    "jest": "^24.8.0",
+    "jest-cli": "^24.8.0",
+    "jest-date-mock": "^1.0.7",
     "webpack": "^2.6.1"
+  },
+  "jest": {
+    "setupFiles": ["jest-date-mock"]
   }
 }
