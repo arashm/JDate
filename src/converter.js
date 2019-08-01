@@ -4,8 +4,8 @@ import { GREGORIAN_EPOCH, PERSIAN_EPOCH } from './constants';
 export default class Converter {
   //  LEAP_GREGORIAN  --  Is a given year in the Gregorian calendar a leap year?
   static leapGregorian(year) {
-    return ((year % 4) === 0) &&
-      (!(((year % 100) === 0) && ((year % 400) !== 0)));
+    return ((year % 4) === 0)
+      && (!(((year % 100) === 0) && ((year % 400) !== 0)));
   }
 
   // GREGORIAN_TO_JD  --  Determine Julian day number from Gregorian calendar date
@@ -19,12 +19,12 @@ export default class Converter {
       pad = -2;
     }
 
-    return (GREGORIAN_EPOCH - 1) +
-      (365 * (year - 1)) +
-      Math.floor((year - 1) / 4) +
-      (-Math.floor((year - 1) / 100)) +
-      Math.floor((year - 1) / 400) +
-      Math.floor((((367 * month) - 362) / 12) + (pad + day));
+    return (GREGORIAN_EPOCH - 1)
+      + (365 * (year - 1))
+      + Math.floor((year - 1) / 4)
+      + (-Math.floor((year - 1) / 100))
+      + Math.floor((year - 1) / 400)
+      + Math.floor((((367 * month) - 362) / 12) + (pad + day));
   }
 
   //  JD_TO_GREGORIAN  --  Calculate Gregorian calendar date from Julian day
@@ -67,14 +67,14 @@ export default class Converter {
     const epbase = year - ((year >= 0) ? 474 : 473);
     const epyear = 474 + mod(epbase, 2820);
 
-    return day +
-      ((month <= 7) ?
-        ((month - 1) * 31) :
-        (((month - 1) * 30) + 6)
-      ) +
-      Math.floor(((epyear * 682) - 110) / 2816) +
-      ((epyear - 1) * 365) +
-      (Math.floor(epbase / 2820) * 1029983) + (PERSIAN_EPOCH - 1);
+    return day
+      + ((month <= 7)
+        ? ((month - 1) * 31)
+        : (((month - 1) * 30) + 6)
+      )
+      + Math.floor(((epyear * 682) - 110) / 2816)
+      + ((epyear - 1) * 365)
+      + (Math.floor(epbase / 2820) * 1029983) + (PERSIAN_EPOCH - 1);
   }
 
   //  JD_TO_PERSIAN  --  Calculate Persian date from Julian day
@@ -89,8 +89,8 @@ export default class Converter {
     } else {
       const aux1 = Math.floor(cyear / 366);
       const aux2 = mod(cyear, 366);
-      ycycle = Math.floor(((2134 * aux1) + (2816 * aux2) + 2815) / 1028522) +
-        aux1 + 1;
+      ycycle = Math.floor(((2134 * aux1) + (2816 * aux2) + 2815) / 1028522)
+        + aux1 + 1;
     }
     let year = ycycle + (2820 * cycle) + 474;
     if (year <= 0) {

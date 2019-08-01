@@ -35,6 +35,7 @@ export default class JDate {
 
     return jdate;
   }
+
   // eslint-disable-next-line camelcase
   static to_jalali(date) { return JDate.toJalali(date); }
 
@@ -53,6 +54,7 @@ export default class JDate {
 
     return new Date(gdate[0], gdate[1] - 1, gdate[2]);
   }
+
   // eslint-disable-next-line camelcase
   static to_gregorian(year, month, day) { return JDate.toGregorian(year, month, day); }
 
@@ -86,9 +88,9 @@ export default class JDate {
 
     if (calcedMonth < 6) {
       return 31;
-    } else if (calcedMonth < 11) {
+    } if (calcedMonth < 11) {
       return 30;
-    } else if (JDate.isLeapYear(calcedYear)) {
+    } if (JDate.isLeapYear(calcedYear)) {
       return 30;
     }
     return 29;
