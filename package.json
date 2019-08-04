@@ -5,7 +5,9 @@
   "scripts": {
     "start": "webpack --progress --colors --watch --env dev",
     "lint": "eslint ./src --ext .js --cache",
-    "test": "jest"
+    "test": "jest",
+    "watch": "webpack --watch --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js"
   },
   "repository": {
     "type": "git",
@@ -41,9 +43,13 @@
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
     "jest-date-mock": "^1.0.7",
-    "webpack": "^2.6.1"
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6",
+    "webpack-merge": "^4.2.1"
   },
   "jest": {
-    "setupFiles": ["jest-date-mock"]
+    "setupFiles": [
+      "jest-date-mock"
+    ]
   }
 }

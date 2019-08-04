@@ -6,15 +6,15 @@ import {
   DAYS_NAMES
 } from './constants';
 
-function div(a, b) {
+export function div(a, b) {
   return Math.floor(a / b);
 }
 
-function mod(a, b) {
+export function mod(a, b) {
   return a - (Math.floor(a / b) * b);
 }
 
-function fixMonth(year, month) {
+export function fixMonth(year, month) {
   if (month > 12 || month <= 0) {
     const yearDiff = Math.floor((month - 1) / 12);
     const newYear = year - yearDiff;
@@ -26,12 +26,12 @@ function fixMonth(year, month) {
   return [year, month];
 }
 
-function zeroLeading(str) {
+export function zeroLeading(str) {
   if (str && str.length === 1) { return `0${str}`; }
   return str;
 }
 
-function replaceYear(str, date) {
+export function replaceYear(str, date) {
   const match = str.match(/[yY]+/);
   if (!match) { return str; }
   switch (match[0]) {
@@ -52,7 +52,7 @@ function replaceYear(str, date) {
   }
 }
 
-function replaceMonth(str, date) {
+export function replaceMonth(str, date) {
   const match = str.match(/[mM]+/);
   if (!match) { return str; }
   switch (match[0]) {
@@ -78,7 +78,7 @@ function replaceMonth(str, date) {
   }
 }
 
-function replaceDay(str, date) {
+export function replaceDay(str, date) {
   const match = str.match(/[dD]+/);
   if (!match) { return str; }
   switch (match[0]) {
@@ -106,11 +106,3 @@ function replaceDay(str, date) {
     }
   }
 }
-
-module.exports = {
-  mod,
-  div,
-  replaceDay,
-  replaceMonth,
-  replaceYear
-};
