@@ -32,14 +32,15 @@ For initializing `JDate` you may either pass an array of Jalali date to it or a 
 ```javascript
 const JDate = require('jalali-date');
 const jdate = new JDate; // => default to today
-const jdate2 = new JDate([1393, 10, 11]);
-const jdate3 = new JDate(new Date(2014, 1, 3));
+const jdate2 = new JDate(1393, 10, 11);
+const jdate3 = new JDate([1393, 10, 11]);
+const jdate4 = new JDate(new Date(2014, 1, 3));
 
 ```
 
 ### API
 ```javascript
-jdate.date //=> [1393,5,13] An Array of Jalali Date
+jdate.date //=> [1393, 5, 13] An Array of Jalali Date
 jdate._d // => Gregorian Date Object
 
 // Getters
@@ -59,7 +60,7 @@ jdate.format('dddd DD MMMM YYYY') // => پنج‌شنبه 12 شهریور 1394
 // Static functions
 JDate.isLeapYear(1393) // => false
 JDate.daysInMonth(1393, 5) // => 31
-JDate.toGregorian(1393,12,11) // => Gregorian Date object
+JDate.toGregorian(1393, 12, 11) // => Gregorian Date object
 JDate.toJalali(new Date) // => JDate object
 ```
 

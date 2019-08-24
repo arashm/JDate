@@ -7,13 +7,22 @@ import Converter from './converter';
 import * as helpers from './helpers';
 
 export default class JDate {
-  constructor(input = new Date()) {
-    this.input = input;
-    if (Array.isArray(input)) {
-      this.date = input.map((num) => parseInt(num, 10));
+  constructor(...args) {
+    if (Array.isArray(args[0]) || args[0] instanceof Date) {
+      [this.input] = args;
+    } else if (args.length === 3) {
+      this.input = args;
+    } else if (!args.length) {
+      this.input = new Date();
+    } else {
+      throw new Error('Unexpected input');
+    }
+
+    if (Array.isArray(this.input)) {
+      this.date = this.input.map((num) => parseInt(num, 10));
       this._d = this.toGregorian();
-    } else if (input instanceof Date) {
-      this._d = input;
+    } else if (this.input instanceof Date) {
+      this._d = this.input;
       this.date = JDate.toJalali(this.input);
     }
   }

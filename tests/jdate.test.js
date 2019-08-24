@@ -21,6 +21,17 @@ describe('JDate', () => {
     expect(jdate._d.getDate()).toEqual(1);
   });
 
+  it('should convert by passing just integers', () => {
+    const jdate = new JDate(1396, 10, 11);
+
+    expect(jdate.date).toEqual([1396, 10, 11]);
+    expect(jdate.input).toEqual([1396, 10, 11]);
+    expect(jdate._d).toBeInstanceOf(Date);
+    expect(jdate._d.getFullYear()).toEqual(2018);
+    expect(jdate._d.getMonth()).toEqual(0);
+    expect(jdate._d.getDate()).toEqual(1);
+  });
+
   it('should convert a JS date object', () => {
     const currentDate = new Date(2018, 0, 1);
     const jdate = new JDate(currentDate);
