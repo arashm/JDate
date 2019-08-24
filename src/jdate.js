@@ -1,7 +1,6 @@
 /*
  * https://github.com/arashm/JDate
  * @author: Arash Mousavi
- * @version: 1.0.0
  */
 
 import Converter from './converter';
