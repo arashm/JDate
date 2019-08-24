@@ -11,7 +11,7 @@ export default class JDate {
   constructor(input = new Date()) {
     this.input = input;
     if (Array.isArray(input)) {
-      this.date = input.map(num => parseInt(num, 10));
+      this.date = input.map((num) => parseInt(num, 10));
       this._d = this.toGregorian();
     } else if (input instanceof Date) {
       this._d = input;

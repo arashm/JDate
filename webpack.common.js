@@ -8,9 +8,11 @@ module.exports = {
   output: {
     path: path.join(__dirname, '/lib'),
     filename: '[name].js',
-    library: 'jdate',
+    library: 'JDate',
     libraryTarget: 'umd',
-    umdNamedDefine: true
+    libraryExport: 'default',
+    umdNamedDefine: true,
+    globalObject: 'this'
   },
   module: {
     rules: [
