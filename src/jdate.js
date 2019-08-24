@@ -141,8 +141,7 @@ export default class JDate {
    */
   setMonth(month) {
     const fixed = helpers.fixMonth(this.getFullYear(), parseInt(month, 10));
-    this.date[0] = fixed[0];
-    this.date[1] = fixed[1];
+    [this.date[0], this.date[1]] = fixed;
     this.input = this.toGregorian();
 
     return this;
