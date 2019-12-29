@@ -37,7 +37,7 @@ export default class JDate {
     const julianDate = Converter.gregorianToJulian(
       date.getFullYear(),
       date.getMonth() + 1,
-      date.getDate(),
+      date.getDate()
     );
     const jdate = Converter.julianToPersian(julianDate);
 
