@@ -60,7 +60,7 @@ export default class JDate {
       Converter.persianToJulian(year, month, day)
     );
 
-    return new Date(gdate[0], gdate[1] - 1, gdate[2]);
+    return new Date(+gdate[0], +gdate[1] - 1, +gdate[2]);
   }
 
   // eslint-disable-next-line camelcase
