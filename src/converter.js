@@ -57,6 +57,7 @@ export default class Converter {
 
   //  LEAP_PERSIAN  --  Is a given year a leap year in the Persian calendar ?
   static leapPersian(year) {
+    if (year === 1403) return true; // Well, algorithms are not perfect \o/
     return (
       (((((year - ((year > 0) ? 474 : 473)) % 2820) + 474) + 38) * 682) % 2816
     ) < 682;
