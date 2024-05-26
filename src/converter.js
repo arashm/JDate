@@ -1,5 +1,5 @@
 import { mod } from './helpers';
-import { GREGORIAN_EPOCH, PERSIAN_EPOCH } from './constants';
+import { GREGORIAN_EPOCH, PERSIAN_EPOCH, NON_LEAP_CORRECTION } from './constants';
 
 export default class Converter {
   //  LEAP_GREGORIAN  --  Is a given year in the Gregorian calendar a leap year?
@@ -57,10 +57,13 @@ export default class Converter {
 
   //  LEAP_PERSIAN  --  Is a given year a leap year in the Persian calendar ?
   static leapPersian(year) {
-    if (year === 1403) return true; // Well, algorithms are not perfect \o/
-    return (
-      (((((year - ((year > 0) ? 474 : 473)) % 2820) + 474) + 38) * 682) % 2816
-    ) < 682;
+    if (NON_LEAP_CORRECTION.includes(year)) {
+      return false;
+    } if (NON_LEAP_CORRECTION.includes(year - 1)) {
+      return true;
+    }
+
+    return (25 * year + 11) % 33 < 8;
   }
 
   //  PERSIAN_TO_JD  --  Determine Julian day from Persian date
