@@ -41,9 +41,7 @@ export function replaceYear(str, date) {
       return value;
     }
     case 'YY': {
-      const value = replaceYear(
-        str.replace(match, String(date.getFullYear()).slice(2)), date
-      );
+      const value = replaceYear(str.replace(match, String(date.getFullYear()).slice(2)), date);
       return value;
     }
     default: {
@@ -67,9 +65,7 @@ export function replaceMonth(str, date) {
     }
     case 'MMM':
     case 'MMMM': {
-      const value = replaceMonth(
-        str.replace(match, MONTH_NAMES[date.getMonth() - 1]), date
-      );
+      const value = replaceMonth(str.replace(match, MONTH_NAMES[date.getMonth() - 1]), date);
       return value;
     }
     default: {
