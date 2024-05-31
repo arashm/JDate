@@ -1,7 +1,7 @@
 JDate
 =====
 
-![Build Status](https://github.com/arashm/JDate/workflows/Tests%20&%20Build/badge.svg?branch=master)
+![Build Status](https://github.com/arashm/JDate/actions/workflows/node.js.yml/badge.svg?branch=master)
 [![npm version](https://badge.fury.io/js/jalali-date.svg)](https://badge.fury.io/js/jalali-date)
 
 A Jalali to Gregorian converter in JavaScript with support of formatting output
