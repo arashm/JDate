@@ -2,7 +2,7 @@ JDate
 =====
 
 ![Build Status](https://github.com/arashm/JDate/actions/workflows/node.js.yml/badge.svg?branch=master)
-[![npm version](https://badge.fury.io/js/jalali-date.svg)](https://badge.fury.io/js/jalali-date)
+[![NPM Version](https://img.shields.io/npm/v/jalali-date)](https://www.npmjs.com/package/jalali-date)
 [![NPM License](https://img.shields.io/npm/l/all-contributors.svg?style=flat)](https://github.com/arashm/JDate/blob/master/LICENSE)
 
 A Jalali to Gregorian converter in JavaScript with support of formatting output
