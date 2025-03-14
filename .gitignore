@@ -2,3 +2,4 @@ npm-debug.log
 components
 node_modules
 .eslintcache
+.yarn
