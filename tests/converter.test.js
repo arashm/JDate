@@ -1,17 +1,5 @@
 import converter from '../src/converter';
 
-// describe('leapGregorian', () => {
-//  const { leapGregorian } = converter;
-//
-//  it('should return true when year is leap', () => {
-//    expect(leapGregorian(2016)).toBe(true);
-//  });
-//
-//  it('should return false when year is not leap', () => {
-//    expect(leapGregorian(2017)).toBe(false);
-//  });
-// });
-
 describe('Converter', () => {
   test('jalaliToFixed', () => {
     expect(converter.jalaliToFixed(1399, 1, 1)).toBe(737504);
