@@ -130,9 +130,9 @@ describe('JDate', () => {
 
   describe('.toJalali', () => {
     it('should return the correct result', () => {
-      const result = JDate.toJalali(new Date(2015, 2, 2));
+      const result = JDate.toJalali(new Date(2025, 2, 20));
 
-      expect(result).toEqual([1393, 12, 11]);
+      expect(result).toEqual([1403, 12, 30]);
     });
 
     it('should also respond to "to_jalali" for backoprt compatibility', () => {

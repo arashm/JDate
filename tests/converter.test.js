@@ -1,73 +1,45 @@
 import converter from '../src/converter';
 
-describe('leapGregorian', () => {
-  const { leapGregorian } = converter;
+// describe('leapGregorian', () => {
+//  const { leapGregorian } = converter;
+//
+//  it('should return true when year is leap', () => {
+//    expect(leapGregorian(2016)).toBe(true);
+//  });
+//
+//  it('should return false when year is not leap', () => {
+//    expect(leapGregorian(2017)).toBe(false);
+//  });
+// });
 
-  it('should return true when year is leap', () => {
-    expect(leapGregorian(2016)).toBe(true);
+describe('Converter', () => {
+  test('jalaliToFixed', () => {
+    expect(converter.jalaliToFixed(1399, 1, 1)).toBe(737504);
+    expect(converter.jalaliToFixed(1400, 1, 1)).toBe(737870);
   });
 
-  it('should return false when year is not leap', () => {
-    expect(leapGregorian(2017)).toBe(false);
-  });
-});
-
-describe('gregorianToJulian', () => {
-  const { gregorianToJulian } = converter;
-
-  it('should return correct julian date number', () => {
-    expect(gregorianToJulian(2017, 6, 21)).toEqual(2457925.5);
-  });
-});
-
-describe('julianToGregorian', () => {
-  const { julianToGregorian } = converter;
-
-  it('should return correct Gregorian date', () => {
-    expect(julianToGregorian(2457925.5)).toEqual([2017, 6, 21]);
-  });
-});
-
-describe('leapPersian', () => {
-  const { leapPersian } = converter;
-
-  it('should return true when year is leap', () => {
-    expect(leapPersian(1395)).toBe(true);
+  test('gregorianToFixed', () => {
+    expect(converter.gregorianToFixed(2021, 3, 21)).toBe(737870);
+    expect(converter.gregorianToFixed(2022, 3, 21)).toBe(738235);
   });
 
-  it('should return false when year is not leap', () => {
-    expect(leapPersian(1396)).toBe(false);
+  test('fixedToGregorian', () => {
+    expect(converter.fixedToGregorian(737870)).toEqual([2021, 3, 21]);
+    expect(converter.fixedToGregorian(738235)).toEqual([2022, 3, 21]);
   });
-});
 
-describe('perdianToJulian', () => {
-  const { persianToJulian } = converter;
-
-  it('should return correct julian date number', () => {
-    expect(persianToJulian(1396, 3, 31)).toEqual(2457925.5);
+  test('fixedToJalali', () => {
+    expect(converter.fixedToJalali(737504)).toEqual([1399, 1, 1]);
+    expect(converter.fixedToJalali(737870)).toEqual([1400, 1, 1]);
   });
-});
 
-describe('julianToPersian', () => {
-  const { julianToPersian } = converter;
-
-  it('should return correct Persian date', () => {
-    expect(julianToPersian(2457925.5)).toEqual([1396, 3, 31]);
+  test('leapPersian', () => {
+    expect(converter.leapPersian(1400)).toBe(false);
+    expect(converter.leapPersian(1403)).toBe(true);
   });
-});
 
-describe('persianToGregorian', () => {
-  const { persianToGregorian } = converter;
-
-  it('should return correct Gregorian date', () => {
-    expect(persianToGregorian(1396, 3, 31)).toEqual([2017, 6, 21]);
-  });
-});
-
-describe('gregorianToPersian', () => {
-  const { gregorianToPersian } = converter;
-
-  it('should return correct Gregorian date', () => {
-    expect(gregorianToPersian(2017, 6, 21)).toEqual([1396, 3, 31]);
+  test('leapGregorian', () => {
+    expect(converter.leapGregorian(2016)).toBe(true);
+    expect(converter.leapGregorian(2017)).toBe(false);
   });
 });

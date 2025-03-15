@@ -6,12 +6,8 @@ import {
   DAYS_NAMES
 } from './constants';
 
-export function div(a, b) {
-  return Math.floor(a / b);
-}
-
-export function mod(a, b) {
-  return a - (Math.floor(a / b) * b);
+export function divCeil(a, b) {
+  return Math.floor((a + b - 1) / b);
 }
 
 export function fixMonth(year, month) {

@@ -1,121 +1,96 @@
-import { mod } from './helpers';
-import { GREGORIAN_EPOCH, PERSIAN_EPOCH, NON_LEAP_CORRECTION } from './constants';
+import { divCeil } from './helpers';
+import {
+  GREGORIAN_EPOCH, PERSIAN_EPOCH, NON_LEAP_CORRECTION, PERSIAN_CYCLE_DAYS
+} from './constants';
 
 export default class Converter {
-  //  LEAP_GREGORIAN  --  Is a given year in the Gregorian calendar a leap year?
-  static leapGregorian(year) {
-    return ((year % 4) === 0)
-      && (!(((year % 100) === 0) && ((year % 400) !== 0)));
+  static gregorianToFixed(year, month, day) {
+    const result = GREGORIAN_EPOCH - 1
+        + 365 * (year - 1)
+        + Math.floor((year - 1) / 4)
+        - Math.floor((year - 1) / 100)
+        + Math.floor((year - 1) / 400)
+        + Math.floor((367 * month - 362) / 12)
+        // eslint-disable-next-line no-nested-ternary
+        + (month <= 2 ? 0 : Converter.leapGregorian(year) ? -1 : -2)
+        + day;
+    return result;
   }
 
-  // GREGORIAN_TO_JD  --  Determine Julian day number from Gregorian calendar date
-  static gregorianToJulian(year, month, day) {
-    let pad;
-    if (month <= 2) {
-      pad = 0;
+  static gregorianYearFromFixed(date) {
+    const d0 = date - GREGORIAN_EPOCH;
+    const n400 = Math.floor(d0 / 146097);
+    const d1 = d0 % 146097;
+    const n100 = Math.floor(d1 / 36524);
+    const d2 = d1 % 36524;
+    const n4 = Math.floor(d2 / 1461);
+    const d3 = d2 % 1461;
+    const n1 = Math.floor(d3 / 365);
+    const year = 400 * n400 + 100 * n100 + 4 * n4 + n1;
+    if (n100 === 4 || n1 === 4) {
+      return year;
+    }
+    return year + 1;
+  }
+
+  static gregorianNewYear(year) {
+    return Converter.gregorianToFixed(year, 1, 1);
+  }
+
+  static fixedToGregorian(date) {
+    const year = Converter.gregorianYearFromFixed(date);
+    const priorDays = date - Converter.gregorianNewYear(year);
+    let correction;
+    if (date < Converter.gregorianToFixed([year, 3, 1])) {
+      correction = 0;
     } else if (Converter.leapGregorian(year)) {
-      pad = -1;
+      correction = 1;
     } else {
-      pad = -2;
+      correction = 2;
     }
-
-    return (GREGORIAN_EPOCH - 1)
-      + (365 * (year - 1))
-      + Math.floor((year - 1) / 4)
-      + (-Math.floor((year - 1) / 100))
-      + Math.floor((year - 1) / 400)
-      + Math.floor((((367 * month) - 362) / 12) + (pad + day));
+    const month = Math.floor((12 * (priorDays + correction) + 373) / 367);
+    const day = date - Converter.gregorianToFixed(year, month, 1) + 1;
+    return [year, month, day];
   }
 
-  //  JD_TO_GREGORIAN  --  Calculate Gregorian calendar date from Julian day
-  static julianToGregorian(jd) {
-    const wjd = Math.floor(jd - 0.5) + 0.5;
-    const depoch = wjd - GREGORIAN_EPOCH;
-    const quadricent = Math.floor(depoch / 146097);
-    const dqc = mod(depoch, 146097);
-    const cent = Math.floor(dqc / 36524);
-    const dcent = mod(dqc, 36524);
-    const quad = Math.floor(dcent / 1461);
-    const dquad = mod(dcent, 1461);
-    const yindex = Math.floor(dquad / 365);
-    let year = (quadricent * 400) + (cent * 100) + (quad * 4) + yindex;
-    if (!((cent === 4) || (yindex === 4))) { year += 1; }
-    const yearday = wjd - Converter.gregorianToJulian(year, 1, 1);
-    let leapadj;
-    if (wjd < Converter.gregorianToJulian(year, 3, 1)) {
-      leapadj = 0;
-    } else if (Converter.leapGregorian(year) ? 1 : 2) {
-      leapadj = 1;
-    } else {
-      leapadj = 2;
+  static jalaliToFixed(year, month, day) {
+    let newYear = PERSIAN_EPOCH - 1 + 365 * (year - 1) + Math.floor((8 * year + 21) / 33);
+    if (NON_LEAP_CORRECTION.includes(year - 1)) {
+      newYear -= 1;
     }
-    const month = Math.floor((((yearday + leapadj) * 12) + 373) / 367);
-    const day = (wjd - Converter.gregorianToJulian(year, month, 1)) + 1;
+    return (
+      newYear - 1
+        + ((month <= 7) ? 31 * (month - 1) : 30 * (month - 1) + 6)
+        + day
+    );
+  }
+
+  static fixedToJalali(fixedDate) {
+    const daysSinceEpoch = fixedDate - Converter.jalaliToFixed(1, 1, 1);
+    let year = 1 + Math.floor((33 * daysSinceEpoch + 3) / PERSIAN_CYCLE_DAYS);
+    let dayOfYear = fixedDate - Converter.jalaliToFixed(year, 1, 1) + 1;
+
+    if (dayOfYear === 366 && NON_LEAP_CORRECTION.includes(year)) {
+      year += 1;
+      dayOfYear = 1;
+    }
+
+    const month = (dayOfYear <= 186) ? divCeil(dayOfYear, 31) : divCeil(dayOfYear - 6, 30);
+    const day = fixedDate - Converter.jalaliToFixed(year, month, 1) + 1;
 
     return [year, month, day];
   }
 
-  //  LEAP_PERSIAN  --  Is a given year a leap year in the Persian calendar ?
-  static leapPersian(year) {
-    if (NON_LEAP_CORRECTION.includes(year)) {
+  static leapPersian(jdate) {
+    if (NON_LEAP_CORRECTION.includes(jdate)) {
       return false;
-    } if (NON_LEAP_CORRECTION.includes(year - 1)) {
+    } if (NON_LEAP_CORRECTION.includes(jdate - 1)) {
       return true;
     }
-
-    return (25 * year + 11) % 33 < 8;
+    return (25 * jdate + 11) % 33 < 8;
   }
 
-  //  PERSIAN_TO_JD  --  Determine Julian day from Persian date
-  static persianToJulian(year, month, day) {
-    const epbase = year - ((year >= 0) ? 474 : 473);
-    const epyear = 474 + mod(epbase, 2820);
-
-    return day
-      + ((month <= 7)
-        ? ((month - 1) * 31)
-        : (((month - 1) * 30) + 6)
-      )
-      + Math.floor(((epyear * 682) - 110) / 2816)
-      + ((epyear - 1) * 365)
-      + (Math.floor(epbase / 2820) * 1029983) + (PERSIAN_EPOCH - 1);
-  }
-
-  //  JD_TO_PERSIAN  --  Calculate Persian date from Julian day
-  static julianToPersian(jd) {
-    const njd = Math.floor(jd) + 0.5;
-    const depoch = njd - Converter.persianToJulian(475, 1, 1);
-    const cycle = Math.floor(depoch / 1029983);
-    const cyear = mod(depoch, 1029983);
-    let ycycle;
-    if (cyear === 1029982) {
-      ycycle = 2820;
-    } else {
-      const aux1 = Math.floor(cyear / 366);
-      const aux2 = mod(cyear, 366);
-      ycycle = Math.floor(((2134 * aux1) + (2816 * aux2) + 2815) / 1028522)
-        + aux1 + 1;
-    }
-    let year = ycycle + (2820 * cycle) + 474;
-    if (year <= 0) {
-      year -= 1;
-    }
-    const yday = (njd - Converter.persianToJulian(year, 1, 1)) + 1;
-    const month = (yday <= 186) ? Math.ceil(yday / 31) : Math.ceil((yday - 6) / 30);
-    const day = (njd - Converter.persianToJulian(year, month, 1)) + 1;
-
-    return [year, month, day];
-  }
-
-  static persianToGregorian(year, month, day) {
-    const julian = Converter.persianToJulian(year, month, day);
-
-    return Converter.julianToGregorian(julian);
-  }
-
-  static gregorianToPersian(year, month, day) {
-    const julian = Converter.gregorianToJulian(year, month, day);
-
-    return Converter.julianToPersian(julian);
+  static leapGregorian(year) {
+    return (year % 4 === 0 && ![100, 200, 300].includes(year % 400));
   }
 }

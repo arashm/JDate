@@ -2,8 +2,10 @@ module.exports = {
   MONTH_NAMES: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'امرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
   ABBR_DAYS: ['۱ش', '۲ش', '۳ش', '۴ش', '۵ش', 'ج', 'ش'],
   DAYS_NAMES: ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'],
-  GREGORIAN_EPOCH: 1721425.5,
-  PERSIAN_EPOCH: 1948320.5,
+  GREGORIAN_EPOCH: 1,
+  GREGORIAN_TO_FIXED_OFFSET: 719528,
+  PERSIAN_EPOCH: 226896,
+  PERSIAN_CYCLE_DAYS: 12053,
   NON_LEAP_CORRECTION: [
     1502,
     1601, 1634, 1667,

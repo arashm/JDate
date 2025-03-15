@@ -34,12 +34,12 @@ export default class JDate {
    * @return {Array}
    */
   static toJalali(date) {
-    const julianDate = Converter.gregorianToJulian(
+    const fixedDate = Converter.gregorianToFixed(
       date.getFullYear(),
       date.getMonth() + 1,
       date.getDate()
     );
-    const jdate = Converter.julianToPersian(julianDate);
+    const jdate = Converter.fixedToJalali(fixedDate);
 
     return jdate;
   }
@@ -56,8 +56,8 @@ export default class JDate {
    * @return {Date}
    */
   static toGregorian(year, month, day) {
-    const gdate = Converter.julianToGregorian(
-      Converter.persianToJulian(year, month, day)
+    const gdate = Converter.fixedToGregorian(
+      Converter.jalaliToFixed(year, month, day)
     );
 
     return new Date(+gdate[0], +gdate[1] - 1, +gdate[2]);
