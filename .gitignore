@@ -2,4 +2,9 @@ npm-debug.log
 components
 node_modules
 .eslintcache
-.yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
