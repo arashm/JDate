@@ -65,6 +65,21 @@ JDate.toGregorian(1393, 12, 11) // => Gregorian Date object
 JDate.toJalali(new Date) // => JDate object
 ```
 
+> **Note on month numbering.** Unlike `Date#getMonth`/`Date#setMonth`, months on an
+> instance are **one-based** — `1` is فروردین and `12` is اسفند. `getDate()` is likewise
+> `1`–`31`. Values passed to `setMonth()` outside `1..12` roll the year over, so
+> `setMonth(13)` gives month `1` of the following year.
+>
+> The static `JDate.daysInMonth(year, month)` is the exception: it is **zero-based**
+> (`0` is فروردین, `11` is اسفند), so it does *not* compose directly with `getMonth()`:
+>
+> ```javascript
+> JDate.daysInMonth(jdate.getFullYear(), jdate.getMonth() - 1) // note the -1
+> ```
+>
+> This inconsistency is retained for backwards compatibility and is expected to be
+> resolved in a future major version.
+
 ## Formatting output
 Use `format()` and following conversion identifiers as follows:
 

@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 import {
   MONTH_NAMES,
   ABBR_DAYS,
@@ -10,10 +8,14 @@ export function divCeil(a, b) {
   return Math.floor((a + b - 1) / b);
 }
 
+/*
+ * Normalizes an out-of-range one-based month into a [year, month] pair,
+ * carrying the overflow into the year. fixMonth(1396, 13) is [1397, 1].
+ */
 export function fixMonth(year, month) {
   if (month > 12 || month <= 0) {
     const yearDiff = Math.floor((month - 1) / 12);
-    const newYear = year - yearDiff;
+    const newYear = year + yearDiff;
     const newMonth = month - (yearDiff * 12);
 
     return [newYear, newMonth];
@@ -38,7 +40,7 @@ export function replaceYear(str, date) {
     }
     case 'YY': {
       const value = replaceYear(
-        str.replace(match, String(date.getFullYear()).slice(2)), date
+        str.replace(match, String(date.getFullYear()).slice(-2)), date
       );
       return value;
     }

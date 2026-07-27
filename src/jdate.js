@@ -7,6 +7,16 @@ import Converter from './converter';
 import * as helpers from './helpers';
 
 export default class JDate {
+  /*
+   * Accepts a Jalali date as an array or as three numbers, a Date object, or
+   * nothing at all (which defaults to today).
+   *
+   * Instance state:
+   *   this.date   {Array}  the Jalali date as [year, month, day]
+   *   this._d     {Date}   the Gregorian equivalent, kept in sync by the setters
+   *   this.input  {Array|Date}  whatever was passed to the constructor; setters
+   *                             do not touch it
+   */
   constructor(...args) {
     if (Array.isArray(args[0]) || args[0] instanceof Date) {
       [this.input] = args;
@@ -79,26 +89,25 @@ export default class JDate {
   /*
    * Returns month length.
    *
+   * Note: `month` is ZERO based here (0 is فروردین, 11 is اسفند), unlike
+   * getMonth/setMonth which are one based. Out-of-range values carry into the
+   * year, so daysInMonth(1395, 12) is فروردین of 1396.
+   *
    * @params {Number} year
    * @params {Number} month zero based
    * @return {Number}
    */
   static daysInMonth(year, month) {
-    let calcedYear = year - Math.floor(month / 12);
-    let calcedMonth = month - (Math.floor(month / 12) * 12);
-
-    if (calcedMonth < 0) {
-      calcedMonth += 12;
-      calcedYear -= 1;
-    } else if (calcedMonth === 0) {
-      calcedMonth = 12;
-    }
+    const calcedYear = year + Math.floor(month / 12);
+    const calcedMonth = ((month % 12) + 12) % 12;
 
     if (calcedMonth < 6) {
       return 31;
-    } if (calcedMonth < 11) {
+    }
+    if (calcedMonth < 11) {
       return 30;
-    } if (JDate.isLeapYear(calcedYear)) {
+    }
+    if (JDate.isLeapYear(calcedYear)) {
       return 30;
     }
     return 29;
@@ -128,12 +137,14 @@ export default class JDate {
    */
   setFullYear(year) {
     this.date[0] = parseInt(year, 10);
-    this.input = this.toGregorian();
+    this._d = this.toGregorian();
     return this;
   }
 
   /*
-   * Shows Jalali month number.
+   * Shows Jalali month number. A number between 1 and 12.
+   *
+   * Note: unlike Date#getMonth, this is one-based.
    *
    * @return {Number} Jalali month number
    */
@@ -142,7 +153,10 @@ export default class JDate {
   }
 
   /*
-   * Sets the Jalali month number. An integer between 0 and 11
+   * Sets the Jalali month number. An integer between 1 and 12.
+   *
+   * Note: unlike Date#setMonth, this is one-based. Values outside 1..12 roll
+   * the year over, so setMonth(13) is month 1 of the following year.
    *
    * @params {Number} month
    * @returns {JDate}
@@ -150,13 +164,13 @@ export default class JDate {
   setMonth(month) {
     const fixed = helpers.fixMonth(this.getFullYear(), parseInt(month, 10));
     [this.date[0], this.date[1]] = fixed;
-    this.input = this.toGregorian();
+    this._d = this.toGregorian();
 
     return this;
   }
 
   /*
-   * Shows Jalali day number. A number between 0 to 31
+   * Shows Jalali day number. A number between 1 and 31
    *
    * @return {Number} Jalali day number
    */
@@ -165,14 +179,14 @@ export default class JDate {
   }
 
   /*
-   * Sets Jalali day number. A number between 0 to 31
+   * Sets Jalali day number. A number between 1 and 31
    *
    * @params {Number} date
    * @return {JDate}
    */
   setDate(date) {
     this.date[2] = parseInt(date, 10);
-    this.input = this.toGregorian();
+    this._d = this.toGregorian();
 
     return this;
   }

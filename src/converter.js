@@ -41,7 +41,7 @@ export default class Converter {
     const year = Converter.gregorianYearFromFixed(date);
     const priorDays = date - Converter.gregorianNewYear(year);
     let correction;
-    if (date < Converter.gregorianToFixed([year, 3, 1])) {
+    if (date < Converter.gregorianToFixed(year, 3, 1)) {
       correction = 0;
     } else if (Converter.leapGregorian(year)) {
       correction = 1;
