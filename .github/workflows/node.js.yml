@@ -23,25 +23,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Setup Node ${{ matrix.node-version }}
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "yarn"
+          cache: "npm"
 
-      # The Yarn release is committed to .yarn/releases and pinned via the
-      # packageManager field, so Corepack resolves the right version on its own.
+      # `npm ci` installs strictly from package-lock.json and fails if the two
+      # have drifted, which is what makes the CI install reproducible.
       - name: Install dependencies
-        run: yarn install --immutable
+        run: npm ci
 
       - name: Lint
-        run: yarn lint
+        run: npm run lint
 
       - name: Build
-        run: yarn build
+        run: npm run build
 
       - name: Test
-        run: yarn test
+        run: npm test

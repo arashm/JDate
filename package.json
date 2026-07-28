@@ -58,14 +58,5 @@
     "eslint-plugin-jest": "^29.16.0",
     "globals": "^17.8.0",
     "jest": "^30.4.2"
-  },
-  "packageManager": "yarn@4.7.0",
-  "resolutions": {
-    "brace-expansion@^1.1.7": "^1.1.12",
-    "brace-expansion@^2.0.1": "^2.0.2",
-    "flatted": "^3.4.3",
-    "picomatch@^2.0.4": "^2.3.2",
-    "picomatch@^2.2.1": "^2.3.2",
-    "picomatch@^2.2.3": "^2.3.2"
   }
 }

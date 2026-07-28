@@ -16,7 +16,7 @@ import jest from 'eslint-plugin-jest';
  */
 export default [
   {
-    ignores: ['lib/**', '.yarn/**']
+    ignores: ['lib/**']
   },
 
   js.configs.recommended,
