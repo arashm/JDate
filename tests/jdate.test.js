@@ -1,13 +1,15 @@
-import { advanceTo, clear } from 'jest-date-mock';
 import JDate from '../src/jdate';
 
 describe('JDate', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should returns the current date by default', () => {
-    advanceTo(new Date(2017, 10, 28));
+    jest.useFakeTimers().setSystemTime(new Date(2017, 10, 28));
     const jdate = new JDate();
 
     expect(jdate.date).toEqual([1396, 9, 7]);
-    clear();
   });
 
   it('should convert a custom array', () => {
