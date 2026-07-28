@@ -109,6 +109,47 @@ describe('config', () => {
       expect(new JDate(FRIDAY, {}).format('MMMM')).toEqual('آبان');
     });
 
+    /*
+     * Regression: making the config argument meaningful also made a trailing
+     * null/undefined an error, which broke `new JDate(date, maybeConfig)` — the
+     * ordinary shape of an optional argument — whenever the caller had nothing
+     * to pass. Caught by diffing the public API against the 1.4.0 bundle.
+     */
+    describe('an absent config', () => {
+      it('should be accepted as undefined', () => {
+        expect(new JDate(FRIDAY, undefined).format('MMMM')).toEqual('آبان');
+        expect(new JDate(1396, 8, 26, undefined).date).toEqual([1396, 8, 26]);
+        expect(new JDate(new Date(2017, 10, 17), undefined).date).toEqual([1396, 8, 26]);
+      });
+
+      it('should be accepted as null', () => {
+        expect(new JDate(FRIDAY, null).format('MMMM')).toEqual('آبان');
+        expect(new JDate(1396, 8, 26, null).date).toEqual([1396, 8, 26]);
+        expect(new JDate(new Date(2017, 10, 17), null).date).toEqual([1396, 8, 26]);
+      });
+
+      it('should keep the built-in names when passed through a wrapper', () => {
+        const build = (date, config) => new JDate(date, config);
+
+        expect(build(FRIDAY).format('dddd MMMM')).toEqual('جمعه آبان');
+        expect(build(FRIDAY, { monthNames: EN_MONTHS }).format('MMMM')).toEqual('Aban');
+      });
+
+      /*
+       * The nullish drop is deliberately narrow: it only fires when what is
+       * left is a whole date form. An undefined *day* is still a three-number
+       * date with a bad day, exactly as in 1.4.0, rather than a two-argument
+       * error.
+       */
+      it('should not swallow an undefined day', () => {
+        const jdate = new JDate(1396, 8, undefined);
+
+        expect(jdate.date[0]).toEqual(1396);
+        expect(jdate.date[1]).toEqual(8);
+        expect(jdate.date[2]).toBeNaN();
+      });
+    });
+
     it('should survive the setters', () => {
       const jdate = new JDate(FRIDAY, { monthNames: EN_MONTHS, dayNames: EN_DAYS });
 

@@ -30,11 +30,24 @@ export default class JDate {
    */
   constructor(...args) {
     const dateArgs = [...args];
+    const last = dateArgs[dateArgs.length - 1];
+
     // A trailing config is told apart from a date by being a plain object; the
     // two other things accepted in that position are an Array and a Date. The
     // resolved config is captured now, so a later setDefaultConfig() call does
     // not retroactively change instances that already exist.
-    const overrides = isPlainObject(dateArgs[dateArgs.length - 1]) ? dateArgs.pop() : undefined;
+    const overrides = isPlainObject(last) ? dateArgs.pop() : undefined;
+
+    // A trailing null/undefined in that position means "no config", so that
+    // `new JDate(date, maybeConfig)` keeps working when the caller has nothing
+    // to pass — the ordinary shape of an optional argument. It is dropped only
+    // when what remains is still a whole date form (one array or Date, or three
+    // numbers), so `new JDate(1396, 8, undefined)` keeps its old meaning rather
+    // than becoming a two-argument error.
+    if ((last === undefined || last === null)
+      && (dateArgs.length === 2 || dateArgs.length === 4)) {
+      dateArgs.pop();
+    }
 
     this.config = resolveConfig(getDefaultConfig(), overrides);
 
