@@ -45,6 +45,35 @@ production as it is smaller. Both ship with external source maps.
 > AMD/RequireJS is no longer supported as of 1.3.0. The bundles target ES2019, so
 > Internet Explorer is no longer supported either — use 1.2.x if you need either.
 
+### TypeScript
+
+Types ship with the package — there is no `@types/jalali-date` to install, and nothing
+to configure. The library itself stays JavaScript; the declarations are hand written in
+`types/jdate.d.ts` and emitted per module format, so `import` and `require` each get the
+shape they actually receive at runtime.
+
+```typescript
+import JDate, { type JalaliDate, type JDateConfig } from 'jalali-date';
+
+const jdate = new JDate([1396, 8, 26], { persianNumerical: true });
+const formatted: string = jdate.format('dddd DD MMMM YYYY');
+const parts: JalaliDate = jdate.date;
+```
+
+Under `require`, the same types come through a namespace on the class:
+
+```typescript
+import JDate = require('jalali-date');
+
+const config: JDate.JDateConfig = { persianNumerical: true };
+```
+
+The constructor is typed as four overloads, so the argument mistakes that fail quietly at
+runtime fail at compile time instead — `new JDate([1396, 8])` builds an Invalid Date
+rather than throwing, and is rejected here because `JalaliDate` is a three-element tuple.
+Config entry counts stay a runtime check, so that a name list inferred as `string[]`
+rather than as a fixed-length tuple can still be passed.
+
 ### Initialization
 
 For initializing `JDate` you may either pass an array of Jalali date to it or a `Date` object. If no parameter is passed, the default is today:
@@ -273,6 +302,18 @@ reach back into an existing instance.
 ## Contribute
 
 Report bugs and suggest feature in [issue tracker](https://github.com/arashm/Jalali-Calendar/issues). Feel free to `Fork` and send `Pull Requests`.
+
+| Script | What it does |
+| ------ | ------------ |
+| `npm test` | Runs the unit tests against `src/` |
+| `npm run lint` | ESLint over the sources, tests and scripts |
+| `npm run build` | Writes the bundles and declarations into `lib/` |
+| `npm run watch` | The same, rebuilding on change |
+| `npm run test:types` | Compiles `tests/types/` against the built declarations |
+| `npm run test:exports` | Checks that every way of importing the package resolves to types |
+
+The last two read `lib/`, so run `npm run build` first. Changing the public API means
+changing `types/jdate.d.ts` alongside `src/` — nothing generates one from the other.
 
 ## License
 

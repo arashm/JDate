@@ -1,0 +1,17 @@
+{
+  /*
+   * The same declarations under the other resolution mode in common use — what
+   * Vite, webpack, esbuild and friends configure. It reads the "exports" map
+   * too, but always takes the "import" condition, so this is the check that
+   * lib/jdate.d.mts is reachable and correct for bundled consumers.
+   *
+   * The .cts fixture is left out: `import = require()` is not valid under
+   * module: esnext.
+   */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler"
+  },
+  "include": ["bundler.ts"]
+}

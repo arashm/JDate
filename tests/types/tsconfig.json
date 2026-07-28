@@ -1,0 +1,30 @@
+{
+  /*
+   * Type-checks the shipped declarations the way Node resolves the package:
+   * through the "exports" map, so the .mts fixture is matched against
+   * lib/jdate.d.mts and the .cts fixture against lib/jdate.d.cts. A footer
+   * mismatch — the class typed as { default: JDate }, or the other way round —
+   * fails here rather than in a consumer's editor. `npm run test:exports` does
+   * not cover it: it checks that each entry point resolves to types at all, not
+   * what those types export.
+   *
+   * Both fixtures import "jalali-date" by name. TypeScript resolves that to
+   * this package via the self-reference rule, which needs no node_modules link
+   * and, more to the point, goes through the same "exports" map a consumer hits.
+   *
+   * Run after `npm run build`: lib/ is what is being checked.
+   */
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2019",
+    "strict": true,
+    "noEmit": true,
+    // The declarations are the subject here, so they are checked rather than
+    // skipped. `"types": []` keeps @types packages a dependency might pull in
+    // out of the picture.
+    "skipLibCheck": false,
+    "types": []
+  },
+  "include": ["node16.mts", "node16.cts"]
+}
