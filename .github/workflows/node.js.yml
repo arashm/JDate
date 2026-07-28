@@ -43,11 +43,16 @@ jobs:
       - name: Test
         run: npm test
 
-      # Both check lib/, so they run after the build. test:types compiles the
-      # fixtures in tests/types against the shipped declarations; test:exports
-      # checks that every way of loading the package resolves to them.
+      # These three check lib/, so they run after the build. test:types compiles
+      # the fixtures in tests/types against the shipped declarations;
+      # test:bundles checks that the bundles still have the export shapes those
+      # declarations describe; test:exports checks that every way of loading the
+      # package resolves to them.
       - name: Type declarations
         run: npm run test:types
+
+      - name: Bundle shapes
+        run: npm run test:bundles
 
       - name: Package exports
         run: npm run test:exports

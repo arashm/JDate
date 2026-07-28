@@ -310,9 +310,10 @@ Report bugs and suggest feature in [issue tracker](https://github.com/arashm/Jal
 | `npm run build` | Writes the bundles and declarations into `lib/` |
 | `npm run watch` | The same, rebuilding on change |
 | `npm run test:types` | Compiles `tests/types/` against the built declarations |
+| `npm run test:bundles` | Checks the bundles still export what those declarations describe |
 | `npm run test:exports` | Checks that every way of importing the package resolves to types |
 
-The last two read `lib/`, so run `npm run build` first. Changing the public API means
+The last three read `lib/`, so run `npm run build` first. Changing the public API means
 changing `types/jdate.d.ts` alongside `src/` — nothing generates one from the other.
 
 ## License
