@@ -84,8 +84,8 @@ JDate.daysInMonth(1393, 5) // => 31
 JDate.toGregorian(1393, 12, 11) // => Gregorian Date object
 JDate.toJalali(new Date) // => JDate object
 
-// Display names (see Configuration)
-jdate.config // => the frozen names this instance formats with
+// Display options (see Configuration)
+jdate.config // => the frozen names and options this instance formats with
 JDate.setDefaultConfig({ monthNames: [...] })
 JDate.getDefaultConfig()
 JDate.resetDefaultConfig()
@@ -157,17 +157,39 @@ A run of an unsupported length is left alone rather than partly consumed — `YY
 
 ## Configuration
 
-The names `format()` prints default to Persian and can be replaced with a config object.
-There are three keys, all optional:
+What `format()` prints defaults to Persian names and ASCII digits, and can be changed with
+a config object. There are four keys, all optional:
 
-| Key | Entries | Used by | Order |
-| --- | ------- | ------- | ----- |
-| `monthNames` | 12 | `MMM`, `MMMM` | calendar order, `فروردین` first |
-| `dayNames` | 7 | `ddd`, `dddd` | **Sunday first**, matching `Date#getDay()` |
-| `abbrDays` | 7 | `d`, `dd` | **Sunday first**, matching `Date#getDay()` |
+| Key | Value | Used by | Notes |
+| --- | ----- | ------- | ----- |
+| `monthNames` | 12 strings | `MMM`, `MMMM` | calendar order, `فروردین` first |
+| `dayNames` | 7 strings | `ddd`, `dddd` | **Sunday first**, matching `Date#getDay()` |
+| `abbrDays` | 7 strings | `d`, `dd` | **Sunday first**, matching `Date#getDay()` |
+| `persianNumerical` | boolean | `YYYY`, `YY`, `M`, `MM`, `D`, `DD` | `false` by default; `true` prints Persian digits |
 
-Keys you leave out keep their built-in Persian values. Only these names are configurable —
-the numeric identifiers (`YYYY`, `MM`, `DD`, …) are unaffected.
+Keys you leave out keep their built-in values.
+
+### Persian numerals
+
+The numeric identifiers print ASCII digits unless `persianNumerical` is `true`:
+
+```javascript
+new JDate([1396, 8, 26]).format('YYYY/MM/DD')                            //=> 1396/08/26
+new JDate([1396, 8, 26], { persianNumerical: true }).format('YYYY/MM/DD') //=> ۱۳۹۶/۰۸/۲۶
+```
+
+It applies only to those identifiers. Names come out of the config verbatim, so a Latin
+abbreviation keeps its own digits, and bracketed literals are never touched:
+
+```javascript
+const jdate = new JDate([1396, 8, 26], { persianNumerical: true });
+
+jdate.format('dddd DD MMMM YYYY') //=> جمعه ۲۶ آبان ۱۳۹۶
+jdate.format('[Day 1] D')         //=> Day 1 ۲۶
+```
+
+It is `false` by default so that existing output does not change; set it app-wide with
+`JDate.setDefaultConfig({ persianNumerical: true })` if you want it everywhere.
 
 ### Per instance
 
@@ -196,7 +218,7 @@ new JDate([1396, 8, 26], en).format('MMMM') //=> Aban
 
 ### Application-wide
 
-`JDate.setDefaultConfig()` sets the names every instance created afterwards will use:
+`JDate.setDefaultConfig()` sets what every instance created afterwards will use:
 
 ```javascript
 JDate.setDefaultConfig(en);
@@ -206,14 +228,14 @@ new JDate([1396, 8, 26]).format('dddd MMMM') //=> Jome Aban
 // still overridable per instance, layered over the default
 new JDate([1396, 8, 26], { dayNames: [...] }).format('dddd MMMM')
 
-JDate.resetDefaultConfig(); // back to the built-in Persian names
+JDate.resetDefaultConfig(); // back to the built-in Persian names and ASCII digits
 ```
 
 Two things to know about it:
 
 - It **replaces** the default rather than merging into whatever a previous call left
   behind, so the result depends only on what you pass. Two partial calls do not
-  accumulate — the second one's omitted keys revert to the built-in names.
+  accumulate — the second one's omitted keys revert to their built-in values.
 - Instances capture the default when they are constructed, so calling it later does not
   retroactively change dates that already exist.
 
@@ -224,14 +246,20 @@ A config is checked when it is passed, so mistakes surface at the call site inst
 
 ```javascript
 new JDate([1396, 8, 26], { monthName: [...] })
-// Error: JDate config: unknown key "monthName", expected one of monthNames, abbrDays, dayNames
+// Error: JDate config: unknown key "monthName", expected one of monthNames, abbrDays, dayNames, persianNumerical
 
 new JDate([1396, 8, 26], { monthNames: ['Farvardin', 'Ordibehesht'] })
 // Error: JDate config: "monthNames" must have 12 entries, got 2
 
 new JDate([1396, 8, 26], { dayNames: 'Jome' })
 // Error: JDate config: "dayNames" must be an array of 7 strings
+
+new JDate([1396, 8, 26], { persianNumerical: 'yes' })
+// Error: JDate config: "persianNumerical" must be a boolean
 ```
+
+`persianNumerical` is checked strictly rather than for truthiness, so a typo is an error
+instead of quietly meaning `true` — as `'false'` otherwise would.
 
 The config must be a plain object; anything else in that position is rejected as
 `Unexpected input`. The resolved config is frozen and its arrays are copied, so

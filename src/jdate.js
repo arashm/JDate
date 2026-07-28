@@ -26,7 +26,7 @@ export default class JDate {
    *   this._d     {Date}   the Gregorian equivalent, kept in sync by the setters
    *   this.input  {Array|Date}  the date passed to the constructor, with any
    *                             config argument stripped; setters do not touch it
-   *   this.config {Object} the frozen resolved display names used by format()
+   *   this.config {Object} the frozen resolved display options used by format()
    */
   constructor(...args) {
     const dateArgs = [...args];
@@ -78,10 +78,11 @@ export default class JDate {
   }
 
   /*
-   * Overrides the display names every later instance formats with. Any of
-   * `monthNames` (12 entries, فروردین first), `dayNames` and `abbrDays` (7
-   * entries each, Sunday first to match Date#getDay) may be given; the ones you
-   * omit fall back to the built-in Persian names.
+   * Overrides what every later instance formats with. Any of `monthNames` (12
+   * entries, فروردین first), `dayNames` and `abbrDays` (7 entries each, Sunday
+   * first to match Date#getDay), and `persianNumerical` (a boolean, false by
+   * default, printing the numeric identifiers in Persian digits) may be given;
+   * the ones you omit fall back to their built-in values.
    *
    * This replaces the default rather than merging into a previous call, so the
    * result depends only on what you pass. Throws on an unknown key or a
@@ -104,7 +105,7 @@ export default class JDate {
   }
 
   /*
-   * Restores the built-in Persian names.
+   * Restores the built-in Persian names and ASCII numerals.
    *
    * @return {Object} the resolved config
    */
@@ -283,7 +284,8 @@ export default class JDate {
    * identifier character in square brackets: format('[Day] D').
    *
    * The name identifiers (MMM/MMMM, d/dd, ddd/dddd) resolve against this
-   * instance's config.
+   * instance's config, which also decides whether the numeric ones print in
+   * ASCII or Persian digits.
    *
    * @params {String} format
    * @return {String}

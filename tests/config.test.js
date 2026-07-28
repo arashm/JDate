@@ -160,6 +160,110 @@ describe('config', () => {
     });
   });
 
+  describe('persianNumerical', () => {
+    it('should default to ASCII digits', () => {
+      expect(JDate.getDefaultConfig().persianNumerical).toBe(false);
+      expect(new JDate(FRIDAY).format('YYYY/MM/DD')).toEqual('1396/08/26');
+    });
+
+    it('should print the numeric identifiers in Persian digits when true', () => {
+      const jdate = new JDate(FRIDAY, { persianNumerical: true });
+
+      expect(jdate.format('YYYY/MM/DD')).toEqual('۱۳۹۶/۰۸/۲۶');
+    });
+
+    it('should cover every numeric identifier', () => {
+      const jdate = new JDate(FRIDAY, { persianNumerical: true });
+
+      expect(jdate.format('YYYY')).toEqual('۱۳۹۶');
+      expect(jdate.format('YYY')).toEqual('۱۳۹۶');
+      expect(jdate.format('YY')).toEqual('۹۶');
+      expect(jdate.format('M')).toEqual('۸');
+      expect(jdate.format('MM')).toEqual('۰۸');
+      expect(jdate.format('D')).toEqual('۲۶');
+      expect(jdate.format('DD')).toEqual('۲۶');
+    });
+
+    // The pad is an ASCII '0' before the map runs, so it has to come out '۰'
+    // rather than being left behind as a stray Latin digit.
+    it('should map the zero a padded value leads with', () => {
+      const jdate = new JDate([1396, 8, 6], { persianNumerical: true });
+
+      expect(jdate.format('MM/DD')).toEqual('۰۸/۰۶');
+    });
+
+    it('should leave the name identifiers alone', () => {
+      const jdate = new JDate(FRIDAY, { persianNumerical: true });
+
+      expect(jdate.format('dddd DD MMMM YYYY')).toEqual('جمعه ۲۶ آبان ۱۳۹۶');
+    });
+
+    /*
+     * The names are the caller's strings, printed verbatim. A Latin abbreviation
+     * keeps its own digits even with the flag on — the flag governs the numeric
+     * identifiers, not everything that happens to look like a number.
+     */
+    it('should not rewrite digits inside configured names', () => {
+      const jdate = new JDate(FRIDAY, { abbrDays: EN_ABBR, persianNumerical: true });
+
+      expect(jdate.format('d DD')).toEqual('j ۲۶');
+    });
+
+    it('should leave literal text and separators alone', () => {
+      const jdate = new JDate(FRIDAY, { persianNumerical: true });
+
+      expect(jdate.format('[Day 1] D')).toEqual('Day 1 ۲۶');
+      expect(jdate.format('YYYY-MM-DD')).toEqual('۱۳۹۶-۰۸-۲۶');
+    });
+
+    it('should combine with overridden names', () => {
+      const jdate = new JDate(FRIDAY, { monthNames: EN_MONTHS, persianNumerical: true });
+
+      expect(jdate.format('D MMMM YYYY')).toEqual('۲۶ Aban ۱۳۹۶');
+    });
+
+    it('should be settable app-wide', () => {
+      JDate.setDefaultConfig({ persianNumerical: true });
+
+      expect(new JDate(FRIDAY).format('YYYY/MM/DD')).toEqual('۱۳۹۶/۰۸/۲۶');
+    });
+
+    it('should be overridable back to false per instance', () => {
+      JDate.setDefaultConfig({ persianNumerical: true });
+
+      expect(new JDate(FRIDAY, { persianNumerical: false }).format('YYYY')).toEqual('1396');
+    });
+
+    it('should be restored to false by resetDefaultConfig', () => {
+      JDate.setDefaultConfig({ persianNumerical: true });
+      JDate.resetDefaultConfig();
+
+      expect(new JDate(FRIDAY).format('YYYY')).toEqual('1396');
+    });
+
+    it('should survive the setters', () => {
+      const jdate = new JDate(FRIDAY, { persianNumerical: true });
+
+      jdate.setMonth(9);
+
+      expect(jdate.format('YYYY/MM/DD')).toEqual('۱۳۹۶/۰۹/۲۶');
+    });
+
+    // Truthiness would make 'no' mean true and '' mean false; both are typos
+    // worth reporting rather than interpreting.
+    it('should reject a non-boolean', () => {
+      const cases = ['true', 'no', 1, 0, null, []];
+
+      cases.forEach((value) => {
+        expect(() => new JDate(FRIDAY, { persianNumerical: value }))
+          .toThrow(/"persianNumerical" must be a boolean/);
+      });
+
+      expect(() => JDate.setDefaultConfig({ persianNumerical: 'yes' }))
+        .toThrow(/"persianNumerical" must be a boolean/);
+    });
+  });
+
   describe('.setDefaultConfig', () => {
     it('should apply to instances created afterwards', () => {
       JDate.setDefaultConfig({ monthNames: EN_MONTHS, dayNames: EN_DAYS });

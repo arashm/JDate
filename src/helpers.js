@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIG } from './config';
+import { PERSIAN_DIGITS } from './constants';
 
 export function divCeil(a, b) {
   return Math.floor((a + b - 1) / b);
@@ -26,6 +27,29 @@ export function zeroLeading(str) {
 }
 
 /*
+ * Rewrites the ASCII digits in `str` as Persian ones, leaving everything else
+ * alone — so separators, and any Latin text around them, pass through.
+ */
+export function toPersianDigits(str) {
+  return str.replace(/[0-9]/g, (digit) => PERSIAN_DIGITS[digit]);
+}
+
+/*
+ * Wraps a resolver so its output is transliterated when the config asks for
+ * Persian numerals. Only the numeric identifiers are wrapped: the name
+ * identifiers come out of the config verbatim, so whatever digits they carry —
+ * the built-in `۱ش`, or a Latin `1sh` a caller supplied — stay as written.
+ *
+ * Wrapping the *output* rather than the number means zeroLeading still pads
+ * with an ASCII '0' and gets it mapped along with the rest, so DD is `۰۶` and
+ * not `۰6`.
+ */
+const numeric = (resolve) => (date, config) => {
+  const value = resolve(date);
+  return config.persianNumerical ? toPersianDigits(value) : value;
+};
+
+/*
  * Every identifier `format` understands, resolved against a JDate instance and
  * a resolved config. The name lists come from the config rather than straight
  * from constants.js so that a caller can localize the output.
@@ -34,15 +58,15 @@ export function zeroLeading(str) {
  * plain Date one, so the day lists are indexed from Sunday.
  */
 const TOKENS = {
-  YYYY: (date) => String(date.getFullYear()),
-  YYY: (date) => String(date.getFullYear()),
-  YY: (date) => String(date.getFullYear()).slice(-2),
-  M: (date) => String(date.getMonth()),
-  MM: (date) => zeroLeading(String(date.getMonth())),
+  YYYY: numeric((date) => String(date.getFullYear())),
+  YYY: numeric((date) => String(date.getFullYear())),
+  YY: numeric((date) => String(date.getFullYear()).slice(-2)),
+  M: numeric((date) => String(date.getMonth())),
+  MM: numeric((date) => zeroLeading(String(date.getMonth()))),
   MMM: (date, config) => config.monthNames[date.getMonth() - 1],
   MMMM: (date, config) => config.monthNames[date.getMonth() - 1],
-  D: (date) => String(date.getDate()),
-  DD: (date) => zeroLeading(String(date.getDate())),
+  D: numeric((date) => String(date.getDate())),
+  DD: numeric((date) => zeroLeading(String(date.getDate()))),
   d: (date, config) => config.abbrDays[date.getDay()],
   dd: (date, config) => config.abbrDays[date.getDay()],
   ddd: (date, config) => config.dayNames[date.getDay()],
