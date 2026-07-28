@@ -6,6 +6,8 @@
     "lint": "eslint . --cache",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:types": "tsc -p tests/types/tsconfig.json && tsc -p tests/types/tsconfig.bundler.json",
+    "test:exports": "attw --pack .",
     "build": "node scripts/build.mjs",
     "watch": "node scripts/build.mjs --watch",
     "prepack": "node scripts/build.mjs"
@@ -16,12 +18,19 @@
   },
   "main": "./lib/jdate.cjs",
   "module": "./lib/jdate.mjs",
+  "types": "./lib/index.d.ts",
   "unpkg": "./lib/jdate.min.js",
   "jsdelivr": "./lib/jdate.min.js",
   "exports": {
     ".": {
-      "import": "./lib/jdate.mjs",
-      "require": "./lib/jdate.cjs",
+      "import": {
+        "types": "./lib/jdate.d.mts",
+        "default": "./lib/jdate.mjs"
+      },
+      "require": {
+        "types": "./lib/jdate.d.cts",
+        "default": "./lib/jdate.cjs"
+      },
       "default": "./lib/jdate.cjs"
     },
     "./lib/*": "./lib/*",
@@ -49,12 +58,14 @@
   },
   "homepage": "https://github.com/arashm/JDate",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
     "@vitest/eslint-plugin": "^1.6.24",
     "esbuild": "^0.28.1",
     "eslint": "^10.8.0",
     "eslint-plugin-import-x": "^4.17.1",
     "globals": "^17.8.0",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   }
 }
