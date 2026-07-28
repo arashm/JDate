@@ -5,24 +5,64 @@
 
 import Converter from './converter';
 import * as helpers from './helpers';
+import {
+  getDefaultConfig, resolveConfig, setDefaultConfig, resetDefaultConfig
+} from './config';
+import { isDate, isPlainObject } from './types';
 
 export default class JDate {
   /*
    * Accepts a Jalali date as an array or as three numbers, a Date object, or
-   * nothing at all (which defaults to today).
+   * nothing at all (which defaults to today). Every form takes an optional
+   * config object as its last argument, layered over the app-wide default:
+   *
+   *   new JDate({ monthNames })                     today
+   *   new JDate([1396, 8, 26], { monthNames })
+   *   new JDate(1396, 8, 26, { monthNames })
+   *   new JDate(new Date(), { monthNames })
    *
    * Instance state:
    *   this.date   {Array}  the Jalali date as [year, month, day]
    *   this._d     {Date}   the Gregorian equivalent, kept in sync by the setters
-   *   this.input  {Array|Date}  whatever was passed to the constructor; setters
-   *                             do not touch it
+   *   this.input  {Array|Date}  the date passed to the constructor, with any
+   *                             config argument stripped; setters do not touch it
+   *   this.config {Object} the frozen resolved display names used by format()
    */
   constructor(...args) {
-    if (Array.isArray(args[0]) || args[0] instanceof Date) {
-      [this.input] = args;
-    } else if (args.length === 3) {
-      this.input = args;
-    } else if (!args.length) {
+    const dateArgs = [...args];
+    const last = dateArgs[dateArgs.length - 1];
+
+    // A trailing config is told apart from a date by being a plain object; the
+    // two other things accepted in that position are an Array and a Date. The
+    // resolved config is captured now, so a later setDefaultConfig() call does
+    // not retroactively change instances that already exist.
+    const overrides = isPlainObject(last) ? dateArgs.pop() : undefined;
+
+    // A trailing null/undefined in that position means "no config", so that
+    // `new JDate(date, maybeConfig)` keeps working when the caller has nothing
+    // to pass — the ordinary shape of an optional argument. It is dropped only
+    // when what remains is still a whole date form (one array or Date, or three
+    // numbers), so `new JDate(1396, 8, undefined)` keeps its old meaning rather
+    // than becoming a two-argument error.
+    if ((last === undefined || last === null)
+      && (dateArgs.length === 2 || dateArgs.length === 4)) {
+      dateArgs.pop();
+    }
+
+    this.config = resolveConfig(getDefaultConfig(), overrides);
+
+    if (Array.isArray(dateArgs[0]) || isDate(dateArgs[0])) {
+      // Anything left beside the date is neither a config (it would have been
+      // popped above) nor part of a supported form, so it is a mistake worth
+      // reporting rather than dropping — most likely a config that is not a
+      // plain object, such as a bare array of names.
+      if (dateArgs.length > 1) {
+        throw new Error('Unexpected input');
+      }
+      [this.input] = dateArgs;
+    } else if (dateArgs.length === 3) {
+      this.input = dateArgs;
+    } else if (!dateArgs.length) {
       this.input = new Date();
     } else {
       throw new Error('Unexpected input');
@@ -31,10 +71,45 @@ export default class JDate {
     if (Array.isArray(this.input)) {
       this.date = this.input.map((num) => parseInt(num, 10));
       this._d = this.toGregorian();
-    } else if (this.input instanceof Date) {
+    } else if (isDate(this.input)) {
       this._d = this.input;
       this.date = JDate.toJalali(this.input);
     }
+  }
+
+  /*
+   * Overrides the display names every later instance formats with. Any of
+   * `monthNames` (12 entries, فروردین first), `dayNames` and `abbrDays` (7
+   * entries each, Sunday first to match Date#getDay) may be given; the ones you
+   * omit fall back to the built-in Persian names.
+   *
+   * This replaces the default rather than merging into a previous call, so the
+   * result depends only on what you pass. Throws on an unknown key or a
+   * wrong-shaped value.
+   *
+   * @params {Object} config
+   * @return {Object} the resolved config
+   */
+  static setDefaultConfig(config) {
+    return setDefaultConfig(config);
+  }
+
+  /*
+   * The frozen config new instances will pick up.
+   *
+   * @return {Object}
+   */
+  static getDefaultConfig() {
+    return getDefaultConfig();
+  }
+
+  /*
+   * Restores the built-in Persian names.
+   *
+   * @return {Object} the resolved config
+   */
+  static resetDefaultConfig() {
+    return resetDefaultConfig();
   }
 
   /*
@@ -207,10 +282,13 @@ export default class JDate {
    * Anything else is passed through, so wrap literal text that contains an
    * identifier character in square brackets: format('[Day] D').
    *
+   * The name identifiers (MMM/MMMM, d/dd, ddd/dddd) resolve against this
+   * instance's config.
+   *
    * @params {String} format
    * @return {String}
    */
   format(format) {
-    return helpers.formatDate(format, this);
+    return helpers.formatDate(format, this, this.config);
   }
 }

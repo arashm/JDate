@@ -1,3 +1,4 @@
+import vm from 'node:vm';
 import {
   describe, it, expect, afterEach, vi
 } from 'vitest';
@@ -47,6 +48,36 @@ describe('JDate', () => {
     expect(jdate._d.getFullYear()).toEqual(2018);
     expect(jdate._d.getMonth()).toEqual(0);
     expect(jdate._d.getDate()).toEqual(1);
+  });
+
+  /*
+   * Regression: the constructor branched on `instanceof Date`, which is
+   * per-realm. A Date built in an iframe, another document, or a vm context
+   * comes from a different Date constructor, so it matched no branch and threw
+   * "Unexpected input" for a perfectly valid date.
+   */
+  describe('cross-realm input', () => {
+    it('should accept a Date from another realm', () => {
+      const foreignDate = vm.runInNewContext('new Date(2018, 0, 1)');
+
+      expect(foreignDate instanceof Date).toBe(false);
+
+      const jdate = new JDate(foreignDate);
+
+      expect(jdate.date).toEqual([1396, 10, 11]);
+      expect(jdate.input).toBe(foreignDate);
+      expect(jdate._d).toBe(foreignDate);
+      expect(jdate.getDay()).toEqual(1);
+      expect(jdate.format('dddd DD MMMM YYYY')).toEqual('دوشنبه 11 دی 1396');
+    });
+
+    it('should accept an array from another realm', () => {
+      // Array.isArray already saw across realms, so this only pins it.
+      const foreignArray = vm.runInNewContext('[1396, 10, 11]');
+
+      expect(foreignArray instanceof Array).toBe(false);
+      expect(new JDate(foreignArray).date).toEqual([1396, 10, 11]);
+    });
   });
 
   it('should return correctly for #getFullYear', () => {
