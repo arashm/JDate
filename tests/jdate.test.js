@@ -1,12 +1,15 @@
+import {
+  describe, it, expect, afterEach, vi
+} from 'vitest';
 import JDate from '../src/jdate';
 
 describe('JDate', () => {
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should returns the current date by default', () => {
-    jest.useFakeTimers().setSystemTime(new Date(2017, 10, 28));
+    vi.useFakeTimers().setSystemTime(new Date(2017, 10, 28));
     const jdate = new JDate();
 
     expect(jdate.date).toEqual([1396, 9, 7]);

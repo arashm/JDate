@@ -1,7 +1,7 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import { flatConfigs as importX } from 'eslint-plugin-import-x';
-import jest from 'eslint-plugin-jest';
+import vitest from '@vitest/eslint-plugin';
 
 /*
  * Flat config, replacing the .eslintrc that extended airbnb-base.
@@ -55,7 +55,7 @@ export default [
   },
 
   {
-    ...jest.configs['flat/recommended'],
+    ...vitest.configs.recommended,
     files: ['tests/**/*.js']
   }
 ];
