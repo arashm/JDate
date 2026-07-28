@@ -9,7 +9,7 @@ A Jalali to Gregorian converter in JavaScript with support of formatting output
 
 ## Installation
 
-Install via NPM/Yarn:
+Install from npm:
 
 ```
 npm install jalali-date
