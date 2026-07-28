@@ -4,6 +4,12 @@ export const ABBR_DAYS = ['۱ش', '۲ش', '۳ش', '۴ش', '۵ش', 'ج', 'ش'];
 
 export const DAYS_NAMES = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'];
 
+// Extended Arabic-Indic digits, indexed by their ASCII value: PERSIAN_DIGITS[7]
+// is '۷'. These are the Persian forms at U+06F0..U+06F9, a different block from
+// the Arabic-Indic digits at U+0660..U+0669 — all ten code points differ, though
+// only 4, 5 and 6 look different, which is what makes a mix-up easy to miss.
+export const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
 export const GREGORIAN_EPOCH = 1;
 
 export const PERSIAN_EPOCH = 226896;

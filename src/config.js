@@ -1,9 +1,10 @@
 /*
- * User-overridable display names.
+ * User-overridable display names and numeral system.
  *
  * The three name lists `format()` reads — month names, full weekday names and
- * abbreviated weekday names — default to the Persian values in constants.js and
- * can be replaced at two levels:
+ * abbreviated weekday names — default to the Persian values in constants.js,
+ * and `persianNumerical` switches the numeric identifiers from ASCII digits to
+ * Persian ones. Both can be set at two levels:
  *
  *   JDate.setDefaultConfig({...})   app-wide, affects every instance
  *   new JDate(date, {...})          one instance, layered over the default
@@ -16,44 +17,73 @@
 import { MONTH_NAMES, ABBR_DAYS, DAYS_NAMES } from './constants';
 import { isPlainObject } from './types';
 
-/*
- * Every recognized key, and how many entries its array must hold. Months are
- * indexed 0..11 in calendar order (فروردین first); both day lists are indexed by
- * Date#getDay(), so 0 is Sunday — not Saturday.
- */
-const CONFIG_SHAPE = {
-  monthNames: 12,
-  abbrDays: 7,
-  dayNames: 7
-};
-
-const KNOWN_KEYS = Object.keys(CONFIG_SHAPE);
-
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
 const freezeNames = (names) => Object.freeze(names.slice());
 
+/*
+ * How a list of display names is checked and stored. Months are indexed 0..11
+ * in calendar order (فروردین first); both day lists are indexed by
+ * Date#getDay(), so 0 is Sunday — not Saturday.
+ *
+ * `copy` runs on the way in, so mutating the array you passed cannot reach back
+ * into a config that has already been resolved.
+ */
+const nameList = (entries) => ({
+  check(key, value) {
+    if (!Array.isArray(value)) {
+      throw new Error(`JDate config: "${key}" must be an array of ${entries} strings`);
+    }
+    if (value.length !== entries) {
+      throw new Error(`JDate config: "${key}" must have ${entries} entries, got ${value.length}`);
+    }
+
+    const badIndex = value.findIndex((name) => typeof name !== 'string');
+    if (badIndex !== -1) {
+      throw new Error(`JDate config: "${key}[${badIndex}]" must be a string`);
+    }
+  },
+  copy: freezeNames
+});
+
+/*
+ * How an on/off switch is checked and stored. Strict rather than truthiness
+ * based, for the same reason the name lists are: `persianNumerical: 'yes'` is a
+ * mistake, and reporting it here beats it quietly meaning the same as `true`
+ * while `'false'` would too.
+ */
+const flag = () => ({
+  check(key, value) {
+    if (typeof value !== 'boolean') {
+      throw new Error(`JDate config: "${key}" must be a boolean`);
+    }
+  },
+  copy: (value) => value
+});
+
+/*
+ * Every recognized key, and how its value is validated and stored.
+ */
+const CONFIG_SHAPE = {
+  monthNames: nameList(12),
+  abbrDays: nameList(7),
+  dayNames: nameList(7),
+  persianNumerical: flag()
+};
+
+const KNOWN_KEYS = Object.keys(CONFIG_SHAPE);
+
+/*
+ * `persianNumerical` defaults to false: the numeric identifiers have emitted
+ * ASCII digits since 1.0, and flipping that would silently change output for
+ * every existing caller.
+ */
 export const DEFAULT_CONFIG = Object.freeze({
   monthNames: freezeNames(MONTH_NAMES),
   abbrDays: freezeNames(ABBR_DAYS),
-  dayNames: freezeNames(DAYS_NAMES)
+  dayNames: freezeNames(DAYS_NAMES),
+  persianNumerical: false
 });
-
-function assertNames(key, value) {
-  const expected = CONFIG_SHAPE[key];
-
-  if (!Array.isArray(value)) {
-    throw new Error(`JDate config: "${key}" must be an array of ${expected} strings`);
-  }
-  if (value.length !== expected) {
-    throw new Error(`JDate config: "${key}" must have ${expected} entries, got ${value.length}`);
-  }
-
-  const badIndex = value.findIndex((name) => typeof name !== 'string');
-  if (badIndex !== -1) {
-    throw new Error(`JDate config: "${key}[${badIndex}]" must be a string`);
-  }
-}
 
 /*
  * Throws on anything unusable. Every key is optional — what is checked is that
@@ -75,7 +105,7 @@ export function validateConfig(config) {
     if (!hasOwn(CONFIG_SHAPE, key)) {
       throw new Error(`JDate config: unknown key "${key}", expected one of ${KNOWN_KEYS.join(', ')}`);
     }
-    assertNames(key, config[key]);
+    CONFIG_SHAPE[key].check(key, config[key]);
   });
 }
 
@@ -95,7 +125,9 @@ export function resolveConfig(base, overrides) {
 
   const resolved = {};
   KNOWN_KEYS.forEach((key) => {
-    resolved[key] = hasOwn(overrides, key) ? freezeNames(overrides[key]) : base[key];
+    resolved[key] = hasOwn(overrides, key)
+      ? CONFIG_SHAPE[key].copy(overrides[key])
+      : base[key];
   });
 
   return Object.freeze(resolved);
