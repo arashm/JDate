@@ -307,8 +307,22 @@ describe('JDate', () => {
       expect(result.format('YYYY [در] MMMM')).toEqual('1396 در آبان');
       expect(result.format('[]')).toEqual('');
       expect(result.format('[[]')).toEqual('[');
-      // An unterminated bracket is ordinary text, identifiers included.
-      expect(result.format('[MM')).toEqual('[08');
+      // An unterminated bracket opens literal mode to the end of the input.
+      expect(result.format('[MM')).toEqual('MM');
+      expect(result.format('MM [YYYY')).toEqual('08 YYYY');
+    });
+
+    it('should scan unterminated brackets in linear time', () => {
+      const result = new JDate([1396, 8, 26]);
+      // Requiring the closing bracket made this quadratic: each '[' scanned to
+      // the end looking for a ']', failed, and backtracked. 200k characters
+      // took ~20s. Guard with a bound far below that but far above the ~1ms
+      // the non-backtracking pattern needs, so this cannot flake.
+      const hostile = '['.repeat(200000);
+
+      const started = Date.now();
+      expect(result.format(hostile)).toEqual(hostile.slice(1));
+      expect(Date.now() - started).toBeLessThan(1000);
     });
 
     it('should not re-scan substituted values for identifiers', () => {

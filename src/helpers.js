@@ -53,8 +53,15 @@ const TOKENS = {
  * A bracketed literal, or a run of one identifier character. Matching whole
  * runs means an unsupported length (YYYYY, DDD) falls through to the default
  * and is emitted verbatim rather than being partly consumed.
+ *
+ * The closing bracket is optional so that this can not backtrack. Requiring it
+ * is quadratic on input like '[[[[[[': every '[' scans to the end of the string
+ * looking for a ']', fails, gives the whole run back, and the global scan then
+ * advances a single character and does it again. With ']?' the greedy [^\]]*
+ * never has to give anything back, so each character is consumed once. The
+ * trade is that an unterminated '[' opens literal mode to the end of the input.
  */
-const TOKEN_PATTERN = /\[([^\]]*)\]|Y+|M+|D+|d+/g;
+const TOKEN_PATTERN = /\[([^\]]*)\]?|Y+|M+|D+|d+/g;
 
 /*
  * Substitutes format identifiers in `str` with values from `date`, in a single
@@ -63,8 +70,8 @@ const TOKEN_PATTERN = /\[([^\]]*)\]|Y+|M+|D+|d+/g;
  *
  * Text between square brackets is emitted literally: format('[Day] D') is
  * "Day 26" where format('Day D') is "26ay 26". A bracket run cannot itself
- * contain a closing bracket, and an unterminated one is treated as ordinary
- * text.
+ * contain a closing bracket, and an unterminated one runs to the end of the
+ * input.
  */
 export function formatDate(str, date) {
   return str.replace(TOKEN_PATTERN, (token, literal) => {
