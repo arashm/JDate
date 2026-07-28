@@ -7,6 +7,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:types": "tsc -p tests/types/tsconfig.json && tsc -p tests/types/tsconfig.bundler.json",
+    "test:bundles": "node tests/bundles.mjs",
     "test:exports": "attw --pack .",
     "build": "node scripts/build.mjs",
     "watch": "node scripts/build.mjs --watch",
