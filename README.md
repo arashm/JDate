@@ -15,7 +15,15 @@ Install via NPM/Yarn:
 npm install jalali-date
 ```
 
-You could grab the latest version from `lib` directory and use it:
+Both ES modules and CommonJS are supported:
+
+```javascript
+import JDate from 'jalali-date'; // ESM
+const JDate = require('jalali-date'); // CommonJS
+```
+
+For the browser, grab a build from the `lib` directory (or a CDN) and load it with a
+`<script>` tag, which defines a global `JDate`:
 
 ```html
 <head>
@@ -24,14 +32,24 @@ You could grab the latest version from `lib` directory and use it:
 </head>
 ```
 
-The full-version is useful for debugging. You may want to use minified version in production as it is smaller.
+The full version is useful for debugging. You may want to use the minified version in
+production as it is smaller. Both ship with external source maps.
+
+| File | Format | Used by |
+| ---- | ------ | ------- |
+| `lib/jdate.mjs` | ESM | `import` |
+| `lib/jdate.cjs` | CommonJS | `require` |
+| `lib/jdate.js` | IIFE | `<script>`, sets `window.JDate` |
+| `lib/jdate.min.js` | IIFE, minified | `<script>`, CDN |
+
+> AMD/RequireJS is no longer supported as of 1.3.0. The bundles target ES2019, so
+> Internet Explorer is no longer supported either — use 1.2.x if you need either.
 
 ### Initialization
 
 For initializing `JDate` you may either pass an array of Jalali date to it or a `Date` object. If no parameter is passed, the default is today:
 
 ```javascript
-const JDate = require('jalali-date');
 const jdate = new JDate; // => default to today
 const jdate2 = new JDate(1393, 10, 11);
 const jdate3 = new JDate([1393, 10, 11]);
