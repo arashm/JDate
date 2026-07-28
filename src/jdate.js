@@ -54,7 +54,7 @@ export default class JDate {
     return jdate;
   }
 
-  // eslint-disable-next-line camelcase
+  // Deprecated snake_case alias, kept for backwards compatibility.
   static to_jalali(date) { return JDate.toJalali(date); }
 
   /*
@@ -73,7 +73,7 @@ export default class JDate {
     return new Date(+gdate[0], +gdate[1] - 1, +gdate[2]);
   }
 
-  // eslint-disable-next-line camelcase
+  // Deprecated snake_case alias, kept for backwards compatibility.
   static to_gregorian(year, month, day) { return JDate.toGregorian(year, month, day); }
 
   /*
