@@ -209,6 +209,18 @@ describe('config', () => {
       expect(jdate.format('d DD')).toEqual('j ۲۶');
     });
 
+    /*
+     * `false` does not mean "ASCII everywhere". The built-in abbrDays are
+     * written with Persian digits, and they are names, so they print as written
+     * whatever the flag says. Pinned because the option's name suggests
+     * otherwise.
+     */
+    it('should not make the built-in abbrDays ASCII when false', () => {
+      expect(new JDate(FRIDAY, { persianNumerical: false }).format('d')).toEqual('ج');
+      // 1396-08-21 is a Sunday, whose built-in abbreviation carries a digit.
+      expect(new JDate([1396, 8, 21], { persianNumerical: false }).format('d')).toEqual('۱ش');
+    });
+
     it('should leave literal text and separators alone', () => {
       const jdate = new JDate(FRIDAY, { persianNumerical: true });
 

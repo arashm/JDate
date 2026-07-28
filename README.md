@@ -191,6 +191,10 @@ jdate.format('[Day 1] D')         //=> Day 1 ۲۶
 It is `false` by default so that existing output does not change; set it app-wide with
 `JDate.setDefaultConfig({ persianNumerical: true })` if you want it everywhere.
 
+> Note that `false` does not mean "ASCII everywhere". The built-in `abbrDays` are written
+> with Persian digits already (`۱ش`, `۲ش`, …), so `d`/`dd` print them whatever this is set
+> to. Override `abbrDays` if you need those in ASCII too.
+
 ### Per instance
 
 Pass the config as the last constructor argument, in any of the four initialization forms:
