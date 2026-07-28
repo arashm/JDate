@@ -8,21 +8,7 @@ import * as helpers from './helpers';
 import {
   getDefaultConfig, resolveConfig, setDefaultConfig, resetDefaultConfig
 } from './config';
-
-/*
- * A trailing config is told apart from a date by being a plain object; the two
- * other things the constructor accepts in that position are an Array and a Date.
- *
- * The brand check rather than `instanceof Date` is deliberate and load-bearing:
- * `instanceof` is per-realm, so a Date built in an iframe or a vm context does
- * not match the Date the bundle closed over. Such a date would then be popped as
- * a config, pass validation (a Date has no own enumerable keys), and leave the
- * constructor silently returning today. Object.prototype.toString reads the
- * internal slot instead, which is realm-independent.
- */
-function isConfig(value) {
-  return Object.prototype.toString.call(value) === '[object Object]';
-}
+import { isDate, isPlainObject } from './types';
 
 export default class JDate {
   /*
@@ -44,15 +30,17 @@ export default class JDate {
    */
   constructor(...args) {
     const dateArgs = [...args];
-    // Captured at construction time, so a later setDefaultConfig() call does not
-    // retroactively change instances that already exist.
-    const overrides = isConfig(dateArgs[dateArgs.length - 1]) ? dateArgs.pop() : undefined;
+    // A trailing config is told apart from a date by being a plain object; the
+    // two other things accepted in that position are an Array and a Date. The
+    // resolved config is captured now, so a later setDefaultConfig() call does
+    // not retroactively change instances that already exist.
+    const overrides = isPlainObject(dateArgs[dateArgs.length - 1]) ? dateArgs.pop() : undefined;
 
     this.config = resolveConfig(getDefaultConfig(), overrides);
 
-    if (Array.isArray(dateArgs[0]) || dateArgs[0] instanceof Date) {
-      // Anything left beside the date is neither a config (isConfig would have
-      // popped it) nor part of a supported form, so it is a mistake worth
+    if (Array.isArray(dateArgs[0]) || isDate(dateArgs[0])) {
+      // Anything left beside the date is neither a config (it would have been
+      // popped above) nor part of a supported form, so it is a mistake worth
       // reporting rather than dropping — most likely a config that is not a
       // plain object, such as a bare array of names.
       if (dateArgs.length > 1) {
@@ -70,7 +58,7 @@ export default class JDate {
     if (Array.isArray(this.input)) {
       this.date = this.input.map((num) => parseInt(num, 10));
       this._d = this.toGregorian();
-    } else if (this.input instanceof Date) {
+    } else if (isDate(this.input)) {
       this._d = this.input;
       this.date = JDate.toJalali(this.input);
     }

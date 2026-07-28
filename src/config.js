@@ -14,6 +14,7 @@
  */
 
 import { MONTH_NAMES, ABBR_DAYS, DAYS_NAMES } from './constants';
+import { isPlainObject } from './types';
 
 /*
  * Every recognized key, and how many entries its array must hold. Months are
@@ -38,18 +39,6 @@ export const DEFAULT_CONFIG = Object.freeze({
   dayNames: freezeNames(DAYS_NAMES)
 });
 
-/*
- * Rejects anything that is not a plain-ish object, so that a Date or an array
- * passed in the config position is a loud error rather than a silently empty
- * override.
- */
-function isConfigLike(value) {
-  return typeof value === 'object'
-    && value !== null
-    && !Array.isArray(value)
-    && !(value instanceof Date);
-}
-
 function assertNames(key, value) {
   const expected = CONFIG_SHAPE[key];
 
@@ -71,10 +60,14 @@ function assertNames(key, value) {
  * the keys present are ones JDate knows about and that their values are the
  * right shape.
  *
+ * The plain-object requirement is what keeps a Date or an Array in the config
+ * position a loud error rather than a silently empty override: neither has own
+ * enumerable keys, so both would otherwise sail through the loop below.
+ *
  * @params {Object} config
  */
 export function validateConfig(config) {
-  if (!isConfigLike(config)) {
+  if (!isPlainObject(config)) {
     throw new Error('JDate config: expected a plain object');
   }
 

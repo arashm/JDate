@@ -261,6 +261,36 @@ describe('config', () => {
       expect(() => new JDate(FRIDAY, foreignNames)).toThrow('Unexpected input');
     });
 
+    /*
+     * validateConfig is the second line of defence, reached directly through
+     * setDefaultConfig rather than through the constructor's sniff. None of
+     * these have own enumerable keys, so without the plain-object gate they
+     * would pass validation and silently resolve to the built-in names.
+     */
+    it('should reject a non-plain object as the default config', () => {
+      const cases = [
+        new Date(2017, 10, 17),
+        vm.runInNewContext('new Date(2017, 10, 17)'),
+        EN_MONTHS,
+        new Map(),
+        'fa',
+        null
+      ];
+
+      cases.forEach((value) => {
+        expect(() => JDate.setDefaultConfig(value))
+          .toThrow('JDate config: expected a plain object');
+      });
+
+      expect(new JDate(FRIDAY).format('MMMM')).toEqual('آبان');
+    });
+
+    it('should accept a null-prototype object as a config', () => {
+      const config = Object.assign(Object.create(null), { monthNames: EN_MONTHS });
+
+      expect(new JDate(FRIDAY, config).format('MMMM')).toEqual('Aban');
+    });
+
     it('should still reject a malformed date', () => {
       expect(() => new JDate(1396, 8)).toThrow('Unexpected input');
       expect(() => new JDate(1396, 8, 26, 1)).toThrow('Unexpected input');
