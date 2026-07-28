@@ -13,23 +13,33 @@
  * So the runtime probe and the declaration are read side by side here, and it
  * is their agreement that is asserted, not either one alone.
  *
+ * Which files to pair is read out of package.json rather than written down
+ * here. Spelling the pairs out in this file would only check that the build
+ * still agrees with this file: aiming "types" at the ESM declaration while
+ * "main" stays CJS is a real mismatch that a hardcoded list sails past, and
+ * `attw` does not catch it either — its node10 check confirms that types
+ * resolve, not that their shape matches the implementation.
+ *
  * This is not a vitest suite. `npm test` covers src/ and has to work on a fresh
- * clone, where lib/ has not been built yet; vitest collects only files whose
- * names end in .test.js, so this one stays out of that run. It has its own
+ * clone, where lib/ has not been built yet. What gets collected is set by the
+ * include pattern in vitest.config.mjs, which reaches only names ending in
+ * .test.js, and this file is deliberately not one of them. It has its own
  * script, `npm run test:bundles`, alongside the other two that read lib/.
  */
 
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const lib = (file) => path.join(root, 'lib', file);
+const fromRoot = (relative) => path.resolve(root, relative);
 
 const requireBundle = createRequire(import.meta.url);
+
+const exists = (file) => access(file).then(() => true, () => false);
 
 /*
  * A date every bundle has to agree on, and the values the unit suite already
@@ -57,59 +67,111 @@ function exercise(JDate, label) {
  * comment that names both shapes in prose, and an unanchored search would find
  * whichever it looked for in every file.
  */
-async function declaredShape(file) {
-  const source = await readFile(lib(file), 'utf8');
+async function declaredShape(relative) {
+  const source = await readFile(fromRoot(relative), 'utf8');
   const isCjs = /^export = JDate;$/m.test(source);
   const isEsm = /^export default JDate;$/m.test(source);
 
-  assert.ok(isCjs || isEsm, `${file}: no export footer found`);
-  assert.ok(!(isCjs && isEsm), `${file}: carries both export footers`);
+  assert.ok(isCjs || isEsm, `${relative}: no export footer found`);
+  assert.ok(!(isCjs && isEsm), `${relative}: carries both export footers`);
 
   return isCjs ? 'export =' : 'export default';
 }
 
-const checks = [
-  ['cjs bundle hands back the class, and .d.cts says so', async () => {
-    const exported = requireBundle(lib('jdate.cjs'));
+/*
+ * The same question asked of the bundle: which footer would describe what
+ * loading it actually hands back. Reported rather than asserted, because either
+ * answer is a shape a declaration can legitimately state — what must not happen
+ * is the two disagreeing.
+ */
+async function runtimeShape(relative, condition) {
+  const file = fromRoot(relative);
 
-    exercise(exported, 'jdate.cjs');
-    // The build footer unwraps module.exports.default away. If it stopped
-    // doing that, this is the property that would come back.
-    assert.equal(exported.default, undefined, 'jdate.cjs: still a namespace object');
+  if (condition === 'import') {
+    const namespace = await import(pathToFileURL(file).href);
 
-    assert.equal(
-      await declaredShape('jdate.d.cts'), 'export =',
-      'jdate.d.cts: declares a shape the cjs bundle does not have'
-    );
-  }],
-
-  ['mjs bundle exports only default, and .d.mts says so', async () => {
-    const namespace = await import(pathToFileURL(lib('jdate.mjs')).href);
-
-    exercise(namespace.default, 'jdate.mjs');
     // The .d.mts exports the type names but no named value, so a named runtime
     // export appearing here would be a binding nothing has declared.
-    assert.deepEqual(Object.keys(namespace), ['default'], 'jdate.mjs: unexpected named exports');
+    assert.deepEqual(Object.keys(namespace), ['default'], `${relative}: unexpected named exports`);
+    exercise(namespace.default, relative);
 
-    assert.equal(
-      await declaredShape('jdate.d.mts'), 'export default',
-      'jdate.d.mts: declares a shape the mjs bundle does not have'
-    );
+    return 'export default';
+  }
+
+  const exported = requireBundle(file);
+
+  if (typeof exported === 'object' && exported !== null) {
+    exercise(exported.default, `${relative} (.default)`);
+    return 'export default';
+  }
+
+  exercise(exported, relative);
+
+  return 'export =';
+}
+
+/*
+ * Every (implementation, declaration) pair the package points a consumer at.
+ * Missing conditions throw rather than being skipped: a pair that quietly
+ * disappears from the map would take its check with it.
+ */
+function entryPairs(pkg) {
+  const dot = pkg.exports && pkg.exports['.'];
+  assert.ok(dot, 'package.json: "exports" has no "." entry');
+
+  // Consumers on moduleResolution: node read this pair and nothing else, and
+  // "main" is a CommonJS entry by definition.
+  const pairs = [
+    { label: '"main" + "types"', condition: 'require', impl: pkg.main, decl: pkg.types }
+  ];
+
+  for (const condition of ['require', 'import']) {
+    const branch = dot[condition];
+    assert.ok(branch, `package.json: "exports" has no "${condition}" condition`);
+
+    pairs.push({
+      label: `exports["."].${condition}`,
+      condition,
+      impl: branch.default,
+      decl: branch.types
+    });
+  }
+
+  return pairs;
+}
+
+const checks = [
+  ['every declared entry point matches the bundle it describes', async () => {
+    const pkg = JSON.parse(await readFile(fromRoot('package.json'), 'utf8'));
+
+    for (const { label, condition, impl, decl } of entryPairs(pkg)) {
+      assert.equal(typeof impl, 'string', `${label}: no implementation path`);
+      assert.equal(typeof decl, 'string', `${label}: no types path`);
+
+      const actual = await runtimeShape(impl, condition);
+      const declared = await declaredShape(decl);
+
+      assert.equal(
+        declared, actual,
+        `${label}: ${decl} says \`${declared}\`, but ${impl} is \`${actual}\``
+      );
+    }
   }],
 
-  ['index.d.ts describes the same shape as main', async () => {
-    // "main" points at the CJS bundle and the top-level "types" field points at
-    // index.d.ts, so the two have to agree for consumers on moduleResolution:
-    // node, who read that pair and nothing else.
-    assert.equal(
-      await declaredShape('index.d.ts'), 'export =',
-      'index.d.ts: declares a shape "main" does not have'
-    );
+  ['cjs bundle hands back the class rather than a namespace', async () => {
+    // Agreement alone would accept a package whose CJS side exported
+    // { default: JDate } and said so. It exports the class instead, which is a
+    // deliberate interop guarantee -- `const JDate = require('jalali-date')` is
+    // what the README documents -- so it is pinned separately from the pairing.
+    const exported = requireBundle(fromRoot('lib/jdate.cjs'));
+
+    exercise(exported, 'lib/jdate.cjs');
+    assert.equal(exported.default, undefined, 'lib/jdate.cjs: still a namespace object');
   }],
 
   ['iife bundles set a global holding the class', async () => {
-    for (const file of ['jdate.js', 'jdate.min.js']) {
-      const source = await readFile(lib(file), 'utf8');
+    for (const file of ['lib/jdate.js', 'lib/jdate.min.js']) {
+      const source = await readFile(fromRoot(file), 'utf8');
       // A fresh context with nothing on it: the bundle has to bring everything
       // it needs, and the global it defines is the only thing left behind.
       const context = vm.createContext({});
@@ -121,22 +183,40 @@ const checks = [
   }]
 ];
 
-let failed = 0;
+const indent = (text) => String(text).split('\n').map((line) => `      ${line}`).join('\n');
 
-for (const [label, run] of checks) {
-  try {
-    await run();
-    console.log(`ok    ${label}`);
-  } catch (error) {
-    failed += 1;
-    console.log(`FAIL  ${label}`);
-    console.log(`      ${error.message.split('\n')[0]}`);
+async function main() {
+  // Every check reads lib/, so without a build they all fail at once on a
+  // missing file. One line saying which build to run beats four saying ENOENT.
+  if (!await exists(fromRoot('lib'))) {
+    console.error('lib/ is missing -- run `npm run build` before this script.');
+    return 1;
   }
+
+  let failed = 0;
+
+  for (const [label, run] of checks) {
+    try {
+      await run();
+      console.log(`ok    ${label}`);
+    } catch (error) {
+      failed += 1;
+      console.log(`FAIL  ${label}`);
+      // An assertion carries its own message and nothing else worth reading.
+      // Anything else -- a bundle that throws on load, a file that moved -- is
+      // unexpected, and there the stack is the whole story.
+      console.log(error.code === 'ERR_ASSERTION'
+        ? indent(error.message.split('\n')[0])
+        : indent(error.stack ?? error));
+    }
+  }
+
+  const total = checks.length;
+  console.log(failed
+    ? `\n${failed} of ${total} bundle checks failed`
+    : `\n${total} bundle checks passed`);
+
+  return failed ? 1 : 0;
 }
 
-const total = checks.length;
-console.log(failed
-  ? `\n${failed} of ${total} bundle checks failed`
-  : `\n${total} bundle checks passed`);
-
-if (failed) { process.exitCode = 1; }
+process.exitCode = await main();
