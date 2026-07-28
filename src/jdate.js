@@ -201,16 +201,16 @@ export default class JDate {
   }
 
   /*
-   * Returns a formated output of current date
+   * Returns a formated output of current date.
+   *
+   * Identifiers: YYYY/YYY, YY, MMMM/MMM, MM, M, DD, D, dddd/ddd, dd/d.
+   * Anything else is passed through, so wrap literal text that contains an
+   * identifier character in square brackets: format('[Day] D').
    *
    * @params {String} format
    * @return {String}
    */
   format(format) {
-    let result = helpers.replaceYear(format, this);
-    result = helpers.replaceMonth(result, this);
-    result = helpers.replaceDay(result, this);
-
-    return result;
+    return helpers.formatDate(format, this);
   }
 }
