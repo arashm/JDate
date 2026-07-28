@@ -102,7 +102,7 @@ JDate.toJalali(new Date) // => JDate object
 Use `format()` and following conversion identifiers as follows:
 
 ```javascript
-date.format('dddd DD MMMM YYYY') //=> دوشنبه 6 امرداد 1393
+date.format('dddd D MMMM YYYY') //=> دوشنبه 6 امرداد 1393
 ```
 
 The conversion identifiers are as follows:
@@ -119,6 +119,33 @@ The conversion identifiers are as follows:
 | `d` or `dd` | Abbreviation of day name in string | `۱ش` (for یکشنبه) |
 | `ddd` or `dddd` | Full day name in string | `یکشنبه` |
 
+Anything that is not an identifier is passed through unchanged, so separators need no
+special treatment:
+
+```javascript
+date.format('YYYY-MM-DD') //=> 1393-05-06
+```
+
+### Escaping literal text
+
+Identifiers are matched wherever they appear, including inside words. To keep literal
+text that contains a `Y`, `M`, `D` or `d`, wrap it in square brackets:
+
+```javascript
+date.format('[Day] D')      //=> Day 6
+date.format('Day D')        //=> 6ay 6     (the D in "Day" is an identifier)
+date.format('YYYY [در] MMMM') //=> 1393 در امرداد
+```
+
+Write `[[]` for a literal `[`. A bracketed run cannot itself contain `]`, and an
+unterminated `[` opens literal mode that runs to the end of the format string:
+
+```javascript
+date.format('MM [YYYY') //=> 05 YYYY
+```
+
+A run of an unsupported length is left alone rather than partly consumed — `YYYYY` and
+`DDD` come back as-is.
 
 ## Contribute
 

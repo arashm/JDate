@@ -29,78 +29,55 @@ export function zeroLeading(str) {
   return str;
 }
 
-export function replaceYear(str, date) {
-  const match = str.match(/[yY]+/);
-  if (!match) { return str; }
-  switch (match[0]) {
-    case 'YYYY':
-    case 'YYY': {
-      const value = replaceYear(str.replace(match, date.getFullYear()), date);
-      return value;
-    }
-    case 'YY': {
-      const value = replaceYear(
-        str.replace(match, String(date.getFullYear()).slice(-2)), date
-      );
-      return value;
-    }
-    default: {
-      return str;
-    }
-  }
-}
+/*
+ * Every identifier `format` understands, resolved against a JDate instance.
+ * Note getMonth is one based, hence the - 1 into MONTH_NAMES.
+ */
+const TOKENS = {
+  YYYY: (date) => String(date.getFullYear()),
+  YYY: (date) => String(date.getFullYear()),
+  YY: (date) => String(date.getFullYear()).slice(-2),
+  M: (date) => String(date.getMonth()),
+  MM: (date) => zeroLeading(String(date.getMonth())),
+  MMM: (date) => MONTH_NAMES[date.getMonth() - 1],
+  MMMM: (date) => MONTH_NAMES[date.getMonth() - 1],
+  D: (date) => String(date.getDate()),
+  DD: (date) => zeroLeading(String(date.getDate())),
+  d: (date) => ABBR_DAYS[date.getDay()],
+  dd: (date) => ABBR_DAYS[date.getDay()],
+  ddd: (date) => DAYS_NAMES[date.getDay()],
+  dddd: (date) => DAYS_NAMES[date.getDay()]
+};
 
-export function replaceMonth(str, date) {
-  const match = str.match(/[mM]+/);
-  if (!match) { return str; }
-  switch (match[0]) {
-    case 'M': {
-      const value = replaceMonth(str.replace(match, date.getMonth()), date);
-      return value;
-    }
-    case 'MM': {
-      const zeroLeadingMonth = zeroLeading(date.getMonth().toString());
-      const value = replaceMonth(str.replace(match, zeroLeadingMonth), date);
-      return value;
-    }
-    case 'MMM':
-    case 'MMMM': {
-      const value = replaceMonth(
-        str.replace(match, MONTH_NAMES[date.getMonth() - 1]), date
-      );
-      return value;
-    }
-    default: {
-      return str;
-    }
-  }
-}
+/*
+ * A bracketed literal, or a run of one identifier character. Matching whole
+ * runs means an unsupported length (YYYYY, DDD) falls through to the default
+ * and is emitted verbatim rather than being partly consumed.
+ *
+ * The closing bracket is optional so that this can not backtrack. Requiring it
+ * is quadratic on input like '[[[[[[': every '[' scans to the end of the string
+ * looking for a ']', fails, gives the whole run back, and the global scan then
+ * advances a single character and does it again. With ']?' the greedy [^\]]*
+ * never has to give anything back, so each character is consumed once. The
+ * trade is that an unterminated '[' opens literal mode to the end of the input.
+ */
+const TOKEN_PATTERN = /\[([^\]]*)\]?|Y+|M+|D+|d+/g;
 
-export function replaceDay(str, date) {
-  const match = str.match(/[dD]+/);
-  if (!match) { return str; }
-  switch (match[0]) {
-    case 'D': {
-      const value = replaceDay(str.replace(match, date.getDate()), date);
-      return value;
-    }
-    case 'DD': {
-      const zeroLeadingDate = zeroLeading(date.getDate().toString());
-      const value = replaceDay(str.replace(match, zeroLeadingDate), date);
-      return value;
-    }
-    case 'd':
-    case 'dd': {
-      const value = replaceDay(str.replace(match, ABBR_DAYS[date.getDay()]), date);
-      return value;
-    }
-    case 'ddd':
-    case 'dddd': {
-      const value = replaceDay(str.replace(match, DAYS_NAMES[date.getDay()]), date);
-      return value;
-    }
-    default: {
-      return str;
-    }
-  }
+/*
+ * Substitutes format identifiers in `str` with values from `date`, in a single
+ * pass — replacements are never re-scanned, so a substituted value can not be
+ * mistaken for another identifier.
+ *
+ * Text between square brackets is emitted literally: format('[Day] D') is
+ * "Day 26" where format('Day D') is "26ay 26". A bracket run cannot itself
+ * contain a closing bracket, and an unterminated one runs to the end of the
+ * input.
+ */
+export function formatDate(str, date) {
+  return str.replace(TOKEN_PATTERN, (token, literal) => {
+    if (literal !== undefined) { return literal; }
+
+    const resolve = TOKENS[token];
+    return resolve ? resolve(date) : token;
+  });
 }

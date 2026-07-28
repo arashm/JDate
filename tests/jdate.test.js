@@ -276,5 +276,71 @@ describe('JDate', () => {
       expect(result.format('D/MM/YYYY')).toEqual('6/08/1396');
       expect(result.format('DD/MM/YYYY')).toEqual('06/08/1396');
     });
+
+    it('should resolve every identifier in a single string', () => {
+      const result = new JDate([1396, 8, 26]);
+
+      expect(result.format('YYYY YYY YY MMMM MMM MM M DD D dddd ddd dd d'))
+        .toEqual('1396 1396 96 آبان آبان 08 8 26 26 جمعه جمعه ج ج');
+    });
+
+    it('should pass separators and unknown identifiers through untouched', () => {
+      const result = new JDate([1396, 8, 26]);
+
+      expect(result.format('.-/: ()')).toEqual('.-/: ()');
+      // Runs of an unsupported length are emitted whole rather than partly
+      // consumed, so YYYYY does not become "1396Y".
+      expect(result.format('Y')).toEqual('Y');
+      expect(result.format('YYYYY')).toEqual('YYYYY');
+      expect(result.format('MMMMM')).toEqual('MMMMM');
+      expect(result.format('DDD')).toEqual('DDD');
+      expect(result.format('ddddd')).toEqual('ddddd');
+      // Lowercase y and m are not identifiers at all.
+      expect(result.format('yyyy mm')).toEqual('yyyy mm');
+    });
+
+    it('should emit bracketed text literally', () => {
+      const result = new JDate([1396, 8, 26]);
+
+      expect(result.format('[Day] D')).toEqual('Day 26');
+      expect(result.format('[YYYY] YYYY')).toEqual('YYYY 1396');
+      expect(result.format('YYYY [در] MMMM')).toEqual('1396 در آبان');
+      expect(result.format('[]')).toEqual('');
+      expect(result.format('[[]')).toEqual('[');
+      // An unterminated bracket opens literal mode to the end of the input.
+      expect(result.format('[MM')).toEqual('MM');
+      expect(result.format('MM [YYYY')).toEqual('08 YYYY');
+    });
+
+    it('should scan unterminated brackets in linear time', () => {
+      const result = new JDate([1396, 8, 26]);
+      // Requiring the closing bracket made this quadratic: each '[' scanned to
+      // the end looking for a ']', failed, and backtracked. 200k characters
+      // took ~20s. Guard with a bound far below that but far above the ~1ms
+      // the non-backtracking pattern needs, so this cannot flake.
+      const hostile = '['.repeat(200000);
+
+      const started = Date.now();
+      expect(result.format(hostile)).toEqual(hostile.slice(1));
+      expect(Date.now() - started).toBeLessThan(1000);
+    });
+
+    it('should not re-scan substituted values for identifiers', () => {
+      const result = new JDate([1396, 8, 26]);
+
+      // Each identifier resolves once, against the date — never against the
+      // output of an earlier substitution.
+      expect(result.format('MMMM MMMM')).toEqual('آبان آبان');
+      expect(result.format('dddd dddd')).toEqual('جمعه جمعه');
+      expect(result.format('YYYY MM DD dddd MMMM')).toEqual('1396 08 26 جمعه آبان');
+    });
+
+    it('should treat $ patterns in the format string as literal text', () => {
+      const result = new JDate([1396, 8, 26]);
+
+      // The replacement runs through a callback, so $&, $` and $' are inert.
+      expect(result.format("YYYY $& $` $'")).toEqual("1396 $& $` $'");
+      expect(result.format('[$&] MM')).toEqual('$& 08');
+    });
   });
 });
