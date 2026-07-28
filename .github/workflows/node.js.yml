@@ -1,5 +1,5 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# Lints, builds and tests the library across the supported Node release lines.
+# For more information see: https://docs.github.com/actions/guides/building-and-testing-nodejs
 
 name: Tests & Build
 
@@ -12,22 +12,36 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 21.x, 22.x, 23.x]
+        # 22 and 24 are LTS, 26 is Current. Older lines are end-of-life.
+        node-version: [22.x, 24.x, 26.x]
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
       - name: Enable Corepack
         run: corepack enable
+
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - name: Install Yarn dependencies
-        run: |
-          yarn set version 4.7.0
-          yarn install --immutable
-      - run: yarn build
-      - run: yarn test
+
+      # The Yarn release is committed to .yarn/releases and pinned via the
+      # packageManager field, so Corepack resolves the right version on its own.
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        run: yarn test

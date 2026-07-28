@@ -104,6 +104,47 @@ describe('JDate', () => {
 
       expect(result).toEqual(30);
     });
+
+    it('should return 29 for a common year and month 11', () => {
+      expect(JDate.daysInMonth(1394, 11)).toEqual(29);
+    });
+
+    // Regression: month 0 (فروردین) returned the length of اسفند because the
+    // normalization mapped it onto month 12 of the wrong year.
+    it('should return 31 for month 0', () => {
+      expect(JDate.daysInMonth(1395, 0)).toEqual(31);
+      expect(JDate.daysInMonth(1394, 0)).toEqual(31);
+    });
+
+    // Regression: the year carry ran in the wrong direction, so month 12 landed
+    // on the previous اسفند instead of the next فروردین.
+    it('should carry months above 11 into the following year', () => {
+      expect(JDate.daysInMonth(1395, 12)).toEqual(31); // فروردین 1396
+      expect(JDate.daysInMonth(1394, 23)).toEqual(30); // اسفند 1395, a leap year
+      expect(JDate.daysInMonth(1395, 23)).toEqual(29); // اسفند 1396, a common year
+    });
+
+    it('should carry negative months into the previous year', () => {
+      expect(JDate.daysInMonth(1395, -1)).toEqual(29); // اسفند 1394, a common year
+      expect(JDate.daysInMonth(1396, -1)).toEqual(30); // اسفند 1395, a leap year
+      expect(JDate.daysInMonth(1395, -12)).toEqual(31); // فروردین 1394
+    });
+
+    it('should sum to the correct year length', () => {
+      const yearLength = (year) => {
+        let total = 0;
+
+        for (let month = 0; month < 12; month += 1) {
+          total += JDate.daysInMonth(year, month);
+        }
+
+        return total;
+      };
+
+      expect(yearLength(1394)).toEqual(365);
+      expect(yearLength(1395)).toEqual(366);
+      expect(yearLength(1403)).toEqual(366);
+    });
   });
 
   describe('.toGregorian', () => {
@@ -139,6 +180,74 @@ describe('JDate', () => {
       const result = JDate.to_jalali(new Date(2015, 2, 2));
 
       expect(result).toEqual([1393, 12, 11]);
+    });
+  });
+
+  // Regression: the setters used to overwrite `input` and leave `_d` pointing at
+  // the date the instance was constructed with, so getDay() and the day-name
+  // format identifiers kept reporting the pre-mutation weekday.
+  describe('setters', () => {
+    it('should keep _d in sync after #setFullYear', () => {
+      const jdate = new JDate([1396, 8, 6]).setFullYear(1397);
+
+      expect(jdate.date).toEqual([1397, 8, 6]);
+      expect(jdate._d.toDateString()).toEqual('Sun Oct 28 2018');
+      expect(jdate.getDay()).toEqual(0);
+      expect(jdate.format('dddd')).toEqual('یکشنبه');
+    });
+
+    it('should keep _d in sync after #setMonth', () => {
+      const jdate = new JDate([1396, 8, 6]).setMonth(9);
+
+      expect(jdate.date).toEqual([1396, 9, 6]);
+      expect(jdate._d.toDateString()).toEqual('Mon Nov 27 2017');
+      expect(jdate.getDay()).toEqual(1);
+      expect(jdate.format('dddd')).toEqual('دوشنبه');
+    });
+
+    it('should keep _d in sync after #setDate', () => {
+      const jdate = new JDate([1396, 8, 6]).setDate(15);
+
+      expect(jdate.date).toEqual([1396, 8, 15]);
+      expect(jdate._d.toDateString()).toEqual('Mon Nov 06 2017');
+      expect(jdate.getDay()).toEqual(1);
+      expect(jdate.format('dddd')).toEqual('دوشنبه');
+    });
+
+    it('should stay consistent across chained setters', () => {
+      const jdate = new JDate([1396, 8, 6]).setFullYear(1397).setMonth(1).setDate(1);
+
+      expect(jdate.date).toEqual([1397, 1, 1]);
+      expect(jdate._d.toDateString()).toEqual('Wed Mar 21 2018');
+      expect(jdate.getDay()).toEqual(3);
+    });
+
+    // Regression: fixMonth carried the overflow into the year with an inverted
+    // sign, so setMonth(13) moved back a year instead of forward.
+    it('should roll the year forward for months above 12', () => {
+      expect(new JDate([1396, 8, 6]).setMonth(13).date).toEqual([1397, 1, 6]);
+      expect(new JDate([1396, 8, 6]).setMonth(24).date).toEqual([1397, 12, 6]);
+      expect(new JDate([1396, 8, 6]).setMonth(25).date).toEqual([1398, 1, 6]);
+    });
+
+    it('should roll the year backward for months at or below 0', () => {
+      expect(new JDate([1396, 8, 6]).setMonth(0).date).toEqual([1395, 12, 6]);
+      expect(new JDate([1396, 8, 6]).setMonth(-1).date).toEqual([1395, 11, 6]);
+    });
+
+    it('should leave in-range months on the same year', () => {
+      expect(new JDate([1396, 8, 6]).setMonth(1).date).toEqual([1396, 1, 6]);
+      expect(new JDate([1396, 8, 6]).setMonth(12).date).toEqual([1396, 12, 6]);
+    });
+
+    it('should not mutate the original constructor input', () => {
+      const input = [1396, 8, 6];
+      const jdate = new JDate(input);
+
+      jdate.setMonth(9);
+
+      expect(jdate.input).toEqual([1396, 8, 6]);
+      expect(input).toEqual([1396, 8, 6]);
     });
   });
 

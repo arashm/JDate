@@ -1,0 +1,27 @@
+version: 2
+
+# Security updates are enabled separately in the repository settings; this file
+# adds scheduled version updates on top of those.
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      # The toolchain is dev-only (the package ships no runtime dependencies),
+      # so routine bumps are batched into a single PR to keep the noise down.
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns:
+          - "*"
