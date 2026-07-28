@@ -1,8 +1,4 @@
-import {
-  MONTH_NAMES,
-  ABBR_DAYS,
-  DAYS_NAMES
-} from './constants';
+import { DEFAULT_CONFIG } from './config';
 
 export function divCeil(a, b) {
   return Math.floor((a + b - 1) / b);
@@ -30,8 +26,12 @@ export function zeroLeading(str) {
 }
 
 /*
- * Every identifier `format` understands, resolved against a JDate instance.
- * Note getMonth is one based, hence the - 1 into MONTH_NAMES.
+ * Every identifier `format` understands, resolved against a JDate instance and
+ * a resolved config. The name lists come from the config rather than straight
+ * from constants.js so that a caller can localize the output.
+ *
+ * Note getMonth is one based, hence the - 1 into monthNames. getDay is the
+ * plain Date one, so the day lists are indexed from Sunday.
  */
 const TOKENS = {
   YYYY: (date) => String(date.getFullYear()),
@@ -39,14 +39,14 @@ const TOKENS = {
   YY: (date) => String(date.getFullYear()).slice(-2),
   M: (date) => String(date.getMonth()),
   MM: (date) => zeroLeading(String(date.getMonth())),
-  MMM: (date) => MONTH_NAMES[date.getMonth() - 1],
-  MMMM: (date) => MONTH_NAMES[date.getMonth() - 1],
+  MMM: (date, config) => config.monthNames[date.getMonth() - 1],
+  MMMM: (date, config) => config.monthNames[date.getMonth() - 1],
   D: (date) => String(date.getDate()),
   DD: (date) => zeroLeading(String(date.getDate())),
-  d: (date) => ABBR_DAYS[date.getDay()],
-  dd: (date) => ABBR_DAYS[date.getDay()],
-  ddd: (date) => DAYS_NAMES[date.getDay()],
-  dddd: (date) => DAYS_NAMES[date.getDay()]
+  d: (date, config) => config.abbrDays[date.getDay()],
+  dd: (date, config) => config.abbrDays[date.getDay()],
+  ddd: (date, config) => config.dayNames[date.getDay()],
+  dddd: (date, config) => config.dayNames[date.getDay()]
 };
 
 /*
@@ -72,12 +72,17 @@ const TOKEN_PATTERN = /\[([^\]]*)\]?|Y+|M+|D+|d+/g;
  * "Day 26" where format('Day D') is "26ay 26". A bracket run cannot itself
  * contain a closing bracket, and an unterminated one runs to the end of the
  * input.
+ *
+ * @params {String} str
+ * @params {JDate}  date
+ * @params {Object} config  a resolved config; defaults to the built-in names
+ * @return {String}
  */
-export function formatDate(str, date) {
+export function formatDate(str, date, config = DEFAULT_CONFIG) {
   return str.replace(TOKEN_PATTERN, (token, literal) => {
     if (literal !== undefined) { return literal; }
 
     const resolve = TOKENS[token];
-    return resolve ? resolve(date) : token;
+    return resolve ? resolve(date, config) : token;
   });
 }
