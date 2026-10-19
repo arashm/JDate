@@ -276,6 +276,18 @@ describe('JDate', () => {
       expect(new JDate([1396, 8, 6]).setMonth(12).date).toEqual([1396, 12, 6]);
     });
 
+    it('should keep the time of day', () => {
+      const jdate = new JDate(new Date(2017, 10, 17, 14, 5, 9, 250))
+        .setFullYear(1397).setMonth(9).setDate(1);
+
+      expect(jdate.date).toEqual([1397, 9, 1]);
+      expect(jdate._d.toDateString()).toEqual('Thu Nov 22 2018');
+      expect(jdate._d.getHours()).toEqual(14);
+      expect(jdate._d.getMinutes()).toEqual(5);
+      expect(jdate._d.getSeconds()).toEqual(9);
+      expect(jdate._d.getMilliseconds()).toEqual(250);
+    });
+
     it('should not mutate the original constructor input', () => {
       const input = [1396, 8, 6];
       const jdate = new JDate(input);
@@ -326,8 +338,9 @@ describe('JDate', () => {
       expect(result.format('MMMMM')).toEqual('MMMMM');
       expect(result.format('DDD')).toEqual('DDD');
       expect(result.format('ddddd')).toEqual('ddddd');
-      // Lowercase y and m are not identifiers at all.
-      expect(result.format('yyyy mm')).toEqual('yyyy mm');
+      expect(result.format('HHH sss ZZ')).toEqual('HHH sss ZZ');
+      // Lowercase y is not an identifier at all.
+      expect(result.format('yyyy')).toEqual('yyyy');
     });
 
     it('should emit bracketed text literally', () => {
@@ -364,6 +377,54 @@ describe('JDate', () => {
       expect(result.format('MMMM MMMM')).toEqual('آبان آبان');
       expect(result.format('dddd dddd')).toEqual('جمعه جمعه');
       expect(result.format('YYYY MM DD dddd MMMM')).toEqual('1396 08 26 جمعه آبان');
+    });
+
+    describe('time identifiers', () => {
+      afterEach(() => {
+        vi.restoreAllMocks();
+      });
+
+      it('should format the time of a Date input', () => {
+        const result = new JDate(new Date(2017, 10, 17, 14, 5, 9));
+
+        expect(result.format('HH:mm:ss')).toEqual('14:05:09');
+        expect(result.format('H:m:s')).toEqual('14:5:9');
+        expect(result.format('hh:mm h')).toEqual('02:05 2');
+      });
+
+      it('should print 12 for noon and midnight on the 12-hour clock', () => {
+        expect(new JDate(new Date(2017, 10, 17, 0, 0)).format('h hh HH')).toEqual('12 12 00');
+        expect(new JDate(new Date(2017, 10, 17, 12, 0)).format('h hh HH')).toEqual('12 12 12');
+      });
+
+      it('should be midnight for a Jalali date input', () => {
+        expect(new JDate([1396, 8, 26]).format('HH:mm:ss')).toEqual('00:00:00');
+      });
+
+      it('should format the UTC offset', () => {
+        const result = new JDate(new Date(2017, 10, 17));
+        const offset = vi.spyOn(result._d, 'getTimezoneOffset');
+
+        offset.mockReturnValue(-210);
+        expect(result.format('Z')).toEqual('+03:30');
+        offset.mockReturnValue(300);
+        expect(result.format('Z')).toEqual('-05:00');
+        offset.mockReturnValue(0);
+        expect(result.format('Z')).toEqual('+00:00');
+      });
+
+      it('should print the time in Persian digits when configured', () => {
+        const result = new JDate(new Date(2017, 10, 17, 14, 5, 9), { persianNumerical: true });
+        vi.spyOn(result._d, 'getTimezoneOffset').mockReturnValue(-210);
+
+        expect(result.format('HH:mm:ss Z')).toEqual('۱۴:۰۵:۰۹ +۰۳:۳۰');
+      });
+
+      it('should emit bracketed time letters literally', () => {
+        const result = new JDate(new Date(2017, 10, 17, 14, 5));
+
+        expect(result.format('HH:mm [ساعت] [hms]')).toEqual('14:05 ساعت hms');
+      });
     });
 
     it('should treat $ patterns in the format string as literal text', () => {
