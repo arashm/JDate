@@ -151,7 +151,8 @@ declare class JDate {
 
   /**
    * Formats the date. Identifiers: `YYYY`/`YYY`, `YY`, `MMMM`/`MMM`, `MM`, `M`,
-   * `DD`, `D`, `dddd`/`ddd`, `dd`/`d`. Anything else passes through, so wrap
+   * `DD`, `D`, `dddd`/`ddd`, `dd`/`d`, and for the time of day `HH`, `H`, `hh`,
+   * `h`, `mm`, `m`, `ss`, `s` and `Z` (UTC offset). Anything else passes through, so wrap
    * literal text containing an identifier character in square brackets —
    * `format('[Day] D')`.
    *

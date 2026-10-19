@@ -190,10 +190,21 @@ export default class JDate {
   }
 
   /*
-   * Converts JDate date to Gregorian
+   * Converts JDate date to Gregorian, keeping the time of day this instance
+   * already has (midnight for one built from a Jalali date), so the setters
+   * move the date without resetting what H/m/s format as.
    */
   toGregorian() {
-    return JDate.toGregorian(this.date[0], this.date[1], this.date[2]);
+    const gdate = JDate.toGregorian(this.date[0], this.date[1], this.date[2]);
+    if (this._d) {
+      gdate.setHours(
+        this._d.getHours(),
+        this._d.getMinutes(),
+        this._d.getSeconds(),
+        this._d.getMilliseconds()
+      );
+    }
+    return gdate;
   }
 
   /*
@@ -279,7 +290,8 @@ export default class JDate {
   /*
    * Returns a formated output of current date.
    *
-   * Identifiers: YYYY/YYY, YY, MMMM/MMM, MM, M, DD, D, dddd/ddd, dd/d.
+   * Identifiers: YYYY/YYY, YY, MMMM/MMM, MM, M, DD, D, dddd/ddd, dd/d, and
+   * for the time of day HH, H, hh, h, mm, m, ss, s and Z (UTC offset, +03:30).
    * Anything else is passed through, so wrap literal text that contains an
    * identifier character in square brackets: format('[Day] D').
    *

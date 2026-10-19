@@ -35,6 +35,18 @@ export function toPersianDigits(str) {
 }
 
 /*
+ * The UTC offset of `d` as +HH:MM. getTimezoneOffset is minutes *behind* UTC,
+ * so Tehran's +03:30 comes back as -210 and the sign flips.
+ */
+function utcOffset(d) {
+  const offset = -d.getTimezoneOffset();
+  const abs = Math.abs(offset);
+  const hours = zeroLeading(String(Math.floor(abs / 60)));
+  const minutes = zeroLeading(String(abs % 60));
+  return `${offset < 0 ? '-' : '+'}${hours}:${minutes}`;
+}
+
+/*
  * Wraps a resolver so its output is transliterated when the config asks for
  * Persian numerals. Only the numeric identifiers are wrapped: the name
  * identifiers come out of the config verbatim, so whatever digits they carry —
@@ -70,7 +82,18 @@ const TOKENS = {
   d: (date, config) => config.abbrDays[date.getDay()],
   dd: (date, config) => config.abbrDays[date.getDay()],
   ddd: (date, config) => config.dayNames[date.getDay()],
-  dddd: (date, config) => config.dayNames[date.getDay()]
+  dddd: (date, config) => config.dayNames[date.getDay()],
+  // The time identifiers only read the wall-clock time off the underlying
+  // Date; they do no time arithmetic of their own.
+  H: numeric((date) => String(date._d.getHours())),
+  HH: numeric((date) => zeroLeading(String(date._d.getHours()))),
+  h: numeric((date) => String(date._d.getHours() % 12 || 12)),
+  hh: numeric((date) => zeroLeading(String(date._d.getHours() % 12 || 12))),
+  m: numeric((date) => String(date._d.getMinutes())),
+  mm: numeric((date) => zeroLeading(String(date._d.getMinutes()))),
+  s: numeric((date) => String(date._d.getSeconds())),
+  ss: numeric((date) => zeroLeading(String(date._d.getSeconds()))),
+  Z: numeric((date) => utcOffset(date._d))
 };
 
 /*
@@ -85,7 +108,7 @@ const TOKENS = {
  * never has to give anything back, so each character is consumed once. The
  * trade is that an unterminated '[' opens literal mode to the end of the input.
  */
-const TOKEN_PATTERN = /\[([^\]]*)\]?|Y+|M+|D+|d+/g;
+const TOKEN_PATTERN = /\[([^\]]*)\]?|Y+|M+|D+|d+|H+|h+|m+|s+|Z+/g;
 
 /*
  * Substitutes format identifiers in `str` with values from `date`, in a single

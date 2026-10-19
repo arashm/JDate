@@ -155,6 +155,23 @@ The conversion identifiers are as follows:
 | `DD` | Day in number | 06 |
 | `d` or `dd` | Abbreviation of day name in string | `۱ش` (for یکشنبه) |
 | `ddd` or `dddd` | Full day name in string | `یکشنبه` |
+| `H` | Hour, 24-hour clock | 14 |
+| `HH` | Hour, 24-hour clock | 09 |
+| `h` | Hour, 12-hour clock | 2 |
+| `hh` | Hour, 12-hour clock | 02 |
+| `m` | Minute | 5 |
+| `mm` | Minute | 05 |
+| `s` | Second | 9 |
+| `ss` | Second | 09 |
+| `Z` | UTC offset | +03:30 |
+
+The time identifiers only format: they print the local time of the `Date` the instance
+was built from (midnight for one built from a Jalali date), and the setters keep that
+time when they move the date.
+
+```javascript
+new JDate(new Date(2017, 10, 17, 14, 5)).format('YYYY/MM/DD HH:mm Z') //=> 1396/08/26 14:05 +03:30
+```
 
 Anything that is not an identifier is passed through unchanged, so separators need no
 special treatment:
@@ -166,7 +183,7 @@ date.format('YYYY-MM-DD') //=> 1393-05-06
 ### Escaping literal text
 
 Identifiers are matched wherever they appear, including inside words. To keep literal
-text that contains a `Y`, `M`, `D` or `d`, wrap it in square brackets:
+text that contains a `Y`, `M`, `D`, `d`, `H`, `h`, `m`, `s` or `Z`, wrap it in square brackets:
 
 ```javascript
 date.format('[Day] D')      //=> Day 6
@@ -194,7 +211,7 @@ a config object. There are four keys, all optional:
 | `monthNames` | 12 strings | `MMM`, `MMMM` | calendar order, `فروردین` first |
 | `dayNames` | 7 strings | `ddd`, `dddd` | **Sunday first**, matching `Date#getDay()` |
 | `abbrDays` | 7 strings | `d`, `dd` | **Sunday first**, matching `Date#getDay()` |
-| `persianNumerical` | boolean | `YYYY`, `YY`, `M`, `MM`, `D`, `DD` | `false` by default; `true` prints Persian digits |
+| `persianNumerical` | boolean | the numeric identifiers, time ones included | `false` by default; `true` prints Persian digits |
 
 Keys you leave out keep their built-in values.
 
